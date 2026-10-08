@@ -1,6 +1,9 @@
 import type { Sensor } from "../models/sensor";
 
-export const mockSensores: Sensor[] = [
+// El código coincide con el id
+type SensorMock = Omit<Sensor, "codigo">;
+
+const sensores: SensorMock[] = [
   {
     id: "TEMP-001", nombre: "Sensor de temperatura", tipo: "temperatura",
     inmuebleId: "inm-2", inmuebleNombre: "Torre Norte", zonaId: "z-2-2", zonaNombre: "Piso 1",
@@ -74,3 +77,5 @@ export const mockSensores: Sensor[] = [
     conectividad: "Conectado · Wi-Fi", ultimaComunicacion: "Hace 3 minutos", umbralMin: 5, umbralMax: 40,
   },
 ];
+
+export const mockSensores: Sensor[] = sensores.map((s) => ({ ...s, codigo: s.id }));

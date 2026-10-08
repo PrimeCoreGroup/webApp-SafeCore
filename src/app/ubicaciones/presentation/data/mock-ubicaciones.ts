@@ -1,6 +1,6 @@
 import type { NodoEdge } from "../models/ubicacion";
 
-// Catálogo base (sin contadores ni estado: esos se derivan de los sensores).
+// Catálogo base; contadores y estado se derivan de los sensores
 export type InmuebleBase = { id: string; nombre: string; direccion: string };
 export type ZonaBase = { id: string; inmuebleId: string; nombre: string };
 

@@ -7,6 +7,7 @@ import BackButton from "@/app/shared/components/ui/BackButton.vue";
 import LoadingState from "@/app/shared/components/ui/LoadingState.vue";
 import PageTitle from "@/app/shared/components/ui/PageTitle.vue";
 import { useAsyncData } from "@/app/shared/composables/useAsyncData";
+import { isMock } from "@/lib/data-sources";
 import { SENSOR_ESTADO_UI, SENSOR_TIPOS } from "@/app/sensores/presentation/config/sensor-ui";
 import { getZona } from "../../../data/ubicaciones.service";
 import { ESTADO_UBICACION_UI } from "../../config/ubicacion-ui";
@@ -21,7 +22,7 @@ const { data, loading, error, reload } = useAsyncData(() => getZona(inmuebleId, 
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <template v-if="data">
-      <PageTitle :title="data.zona.nombre" :description="`${data.inmueble.nombre} · Zona supervisada`" />
+      <PageTitle :title="data.zona.nombre" :description="`${data.inmueble.nombre} · Zona supervisada`" mock />
 
       <AppCard>
         <div class="flex flex-col justify-between gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center">
@@ -42,10 +43,11 @@ const { data, loading, error, reload } = useAsyncData(() => getZona(inmuebleId, 
         </p>
 
         <div class="mt-2 divide-y divide-slate-100">
-          <RouterLink
+          <component
+            :is="isMock('sensores') ? RouterLink : 'div'"
             v-for="sensor in data.sensores"
             :key="sensor.id"
-            :to="{ name: 'sensor-detalle', params: { id: sensor.id } }"
+            v-bind="isMock('sensores') ? { to: { name: 'sensor-detalle', params: { id: sensor.id } } } : {}"
             class="flex w-full items-center gap-4 py-4 hover:bg-blue-50/40"
           >
             <span class="grid size-10 place-items-center rounded-lg bg-slate-100 text-slate-600">
@@ -58,8 +60,8 @@ const { data, loading, error, reload } = useAsyncData(() => getZona(inmuebleId, 
             <AppBadge :tone="SENSOR_ESTADO_UI[sensor.estado].tone" :icon="SENSOR_ESTADO_UI[sensor.estado].icon">
               {{ SENSOR_ESTADO_UI[sensor.estado].label }}
             </AppBadge>
-            <ChevronRight class="size-4 text-slate-400" aria-hidden="true" />
-          </RouterLink>
+            <ChevronRight v-if="isMock('sensores')" class="size-4 text-slate-400" aria-hidden="true" />
+          </component>
         </div>
       </AppCard>
     </template>

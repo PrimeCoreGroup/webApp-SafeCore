@@ -134,13 +134,13 @@ router.beforeEach((to) => {
   const token = getToken();
   const isPublic = to.meta.public === true;
 
-  // Sin sesión → solo puede entrar a rutas públicas
+  // Sin sesión solo accede a rutas públicas
   if (!token && !isPublic) return "/login";
 
-  // La web es solo para administradores; el resto de roles usa la app móvil
+  // Solo administradores
   if (token && !isPublic && getUser()?.role !== "ADMIN") return "/login";
 
-  // Con sesión → no puede volver al login con el botón atrás
+  // Con sesión no vuelve al login
   if (token && isPublic && getUser()?.role === "ADMIN") return "/dashboard";
 });
 

@@ -10,7 +10,7 @@ import { getTendencias } from "../../../data/analitica.service";
 
 const { data: tendencias, loading, error, reload } = useAsyncData(getTendencias);
 
-// Dimensiones del área de trazado del SVG (viewBox 500x220)
+// Área de trazado del SVG (viewBox 500x220)
 const X0 = 30;
 const X1 = 480;
 const Y0 = 190;
@@ -26,7 +26,7 @@ function puntos(serie: number[], max: number): string {
 
 <template>
   <BackButton :to="{ name: 'reportes' }" />
-  <PageTitle title="Tendencias" description="Evolución de los principales indicadores." />
+  <PageTitle title="Tendencias" description="Evolución de los principales indicadores." mock />
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <div v-if="tendencias" class="grid gap-6 lg:grid-cols-2">

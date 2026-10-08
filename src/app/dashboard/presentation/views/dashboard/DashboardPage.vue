@@ -89,7 +89,10 @@ const actividadTone = {
         <AppCard>
           <h2 class="text-lg font-bold text-ink">Estado por ubicación</h2>
           <p class="mt-1 text-sm text-muted">Resumen de edificios supervisados</p>
-          <div class="mt-5 space-y-4">
+          <p v-if="!data.ubicaciones" class="mt-5 rounded-lg bg-slate-50 p-4 text-sm text-muted">
+            Disponible cuando el backend soporte inmuebles y zonas.
+          </p>
+          <div v-else class="mt-5 space-y-4">
             <RouterLink
               v-for="ubicacion in data.ubicaciones"
               :key="ubicacion.id"

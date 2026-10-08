@@ -54,7 +54,7 @@ async function guardar() {
 </script>
 
 <template>
-  <PageTitle title="Configuración" description="Preferencias generales y protocolos de SafeCore." />
+  <PageTitle title="Configuración" description="Preferencias generales y protocolos de SafeCore." mock />
 
   <LoadingState :loading="cargando" :error="errorCarga" @retry="cargar">
     <div class="grid gap-6 lg:grid-cols-3">

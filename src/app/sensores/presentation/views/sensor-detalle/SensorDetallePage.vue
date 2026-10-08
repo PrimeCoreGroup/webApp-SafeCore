@@ -9,6 +9,7 @@ import BackButton from "@/app/shared/components/ui/BackButton.vue";
 import LoadingState from "@/app/shared/components/ui/LoadingState.vue";
 import PageTitle from "@/app/shared/components/ui/PageTitle.vue";
 import { useAsyncData } from "@/app/shared/composables/useAsyncData";
+import { isMock } from "@/lib/data-sources";
 import { useToast } from "@/app/shared/composables/useToast";
 import { getLecturasSensor, getSensor, probarSensor } from "../../../data/sensores.service";
 import { SENSOR_ESTADO_UI, SENSOR_TIPOS } from "../../config/sensor-ui";
@@ -38,7 +39,7 @@ async function probar() {
 function umbral(s: Sensor): string {
   const unidad = SENSOR_TIPOS[s.tipo].unidad;
   if (!unidad) return "No aplica";
-  if (s.umbralMin === null && s.umbralMax === null) return "Sin configurar";
+  if (s.umbralMin === null && s.umbralMax === null) return isMock("sensores") ? "Sin configurar" : "No disponible aún";
   const min = s.umbralMin === null ? "—" : `${s.umbralMin} ${unidad}`;
   const max = s.umbralMax === null ? "—" : `${s.umbralMax} ${unidad}`;
   return `${min} a ${max}`;
@@ -49,12 +50,12 @@ function filas(s: Sensor): [string, string][] {
     ["Tipo", SENSOR_TIPOS[s.tipo].descripcion],
     ["Estado", SENSOR_ESTADO_UI[s.estado].label],
     ["Conectividad", s.conectividad],
-    ["Ubicación", `${s.inmuebleNombre} · ${s.zonaNombre}`],
-    ["Nodo Edge", s.nodoNombre],
+    ["Ubicación", s.inmuebleNombre ? `${s.inmuebleNombre} · ${s.zonaNombre}` : "Sin asignar"],
+    ["Nodo Edge", s.nodoNombre || "Sin asignar"],
     ["Última lectura", s.ultimaLectura ?? "Sin lectura"],
     ["Última comunicación", s.ultimaComunicacion],
     ["Umbrales", umbral(s)],
-    ["Identificador", s.id],
+    ["Identificador", s.codigo],
   ];
 }
 </script>
@@ -64,9 +65,16 @@ function filas(s: Sensor): [string, string][] {
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <template v-if="sensor">
-      <PageTitle :title="sensor.nombre" :description="`${sensor.zonaNombre} · ${sensor.inmuebleNombre}`">
+      <PageTitle
+        :title="sensor.nombre"
+        :description="
+          sensor.inmuebleNombre ? `${sensor.zonaNombre} · ${sensor.inmuebleNombre}` : `Identificador ${sensor.codigo}`
+        "
+      >
         <template #action>
-          <AppButton variant="secondary" :icon="FlaskConical" :loading="probando" @click="probar">Probar</AppButton>
+          <AppButton v-if="isMock('sensores')" variant="secondary" :icon="FlaskConical" :loading="probando" @click="probar">
+            Probar
+          </AppButton>
           <RouterLink :to="{ name: 'sensor-editar', params: { id: sensor.id } }">
             <AppButton :icon="Pencil" tabindex="-1">Editar</AppButton>
           </RouterLink>

@@ -23,5 +23,6 @@ export type DashboardData = {
   dispositivos: { valor: number; detalle: string };
   conectividad: { valor: number; detalle: string };
   actividadReciente: ActividadReciente[];
-  ubicaciones: UbicacionResumen[];
+  // null si el backend no tiene ubicaciones
+  ubicaciones: UbicacionResumen[] | null;
 };

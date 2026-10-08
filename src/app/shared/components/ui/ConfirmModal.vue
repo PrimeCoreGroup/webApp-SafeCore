@@ -9,7 +9,7 @@ const props = withDefaults(
     tone?: "danger" | "success" | "info";
     confirmLabel?: string;
     cancelLabel?: string;
-    // sin botón de cancelar (modales informativos de confirmación)
+    // oculta el botón de cancelar
     hideCancel?: boolean;
     loading?: boolean;
   }>(),

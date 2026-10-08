@@ -27,7 +27,7 @@ async function onSubmit() {
   try {
     const { token, user } = await loginRequest({ email: email.value.trim(), password: password.value });
 
-    // La web es solo para administradores; el resto de roles usa la app móvil
+    // La web es solo para administradores
     if (user.role !== "ADMIN") {
       clearToken();
       clearUser();
@@ -114,6 +114,10 @@ async function onSubmit() {
             {{ loading ? "Ingresando…" : "Iniciar sesión" }}
           </button>
         </form>
+
+        <p class="mt-6 text-center text-xs text-muted">
+          Acceso de demostración: el backend aún no tiene login, así que cualquier correo y contraseña ingresan como administrador.
+        </p>
       </div>
     </section>
   </main>

@@ -29,7 +29,7 @@ const filtrados = computed(() => {
   const texto = filtros.busqueda.trim().toLowerCase();
   return (sensores.value ?? []).filter(
     (s) =>
-      (!texto || s.id.toLowerCase().includes(texto) || s.nombre.toLowerCase().includes(texto)) &&
+      (!texto || s.codigo.toLowerCase().includes(texto) || s.nombre.toLowerCase().includes(texto)) &&
       (!filtros.tipo || s.tipo === filtros.tipo) &&
       (!filtros.estado || s.estado === filtros.estado) &&
       (!filtros.inmuebleId || s.inmuebleId === filtros.inmuebleId),
@@ -52,7 +52,7 @@ async function confirmarEliminacion() {
   eliminando.value = true;
   try {
     await deleteSensor(sensorAEliminar.value.id);
-    toast.add({ type: "success", message: `Sensor ${sensorAEliminar.value.id} eliminado` });
+    toast.add({ type: "success", message: `Sensor ${sensorAEliminar.value.codigo} eliminado` });
     sensorAEliminar.value = null;
     await reload();
   } catch (e) {
@@ -125,14 +125,14 @@ async function confirmarEliminacion() {
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-for="sensor in filtrados" :key="sensor.id" class="hover:bg-blue-50/30">
-              <td class="px-5 py-4 text-sm font-bold text-ink">{{ sensor.id }}</td>
+              <td class="px-5 py-4 text-sm font-bold text-ink">{{ sensor.codigo }}</td>
               <td class="px-5 py-4">
                 <span class="block text-sm font-semibold">{{ sensor.nombre }}</span>
                 <span class="block text-xs text-muted">{{ SENSOR_TIPOS[sensor.tipo].descripcion }}</span>
               </td>
               <td class="px-5 py-4 text-sm text-muted">
-                <span class="block">{{ sensor.inmuebleNombre }}</span>
-                <span class="block text-xs">{{ sensor.zonaNombre }}</span>
+                <span class="block">{{ sensor.inmuebleNombre || "Sin asignar" }}</span>
+                <span v-if="sensor.zonaNombre" class="block text-xs">{{ sensor.zonaNombre }}</span>
               </td>
               <td
                 :class="[
@@ -152,7 +152,7 @@ async function confirmarEliminacion() {
                 <div class="flex items-center justify-end gap-1">
                   <RouterLink
                     :to="{ name: 'sensor-detalle', params: { id: sensor.id } }"
-                    :aria-label="`Ver detalle de ${sensor.id}`"
+                    :aria-label="`Ver detalle de ${sensor.codigo}`"
                     title="Ver detalle"
                     class="grid size-9 place-items-center rounded-lg text-slate-600 hover:bg-slate-100"
                   >
@@ -160,7 +160,7 @@ async function confirmarEliminacion() {
                   </RouterLink>
                   <RouterLink
                     :to="{ name: 'sensor-editar', params: { id: sensor.id } }"
-                    :aria-label="`Editar ${sensor.id}`"
+                    :aria-label="`Editar ${sensor.codigo}`"
                     title="Editar"
                     class="grid size-9 place-items-center rounded-lg text-slate-600 hover:bg-slate-100"
                   >
@@ -168,7 +168,7 @@ async function confirmarEliminacion() {
                   </RouterLink>
                   <button
                     type="button"
-                    :aria-label="`Eliminar ${sensor.id}`"
+                    :aria-label="`Eliminar ${sensor.codigo}`"
                     title="Eliminar"
                     class="grid size-9 place-items-center rounded-lg text-slate-600 hover:bg-red-50 hover:text-danger"
                     @click="sensorAEliminar = sensor"
@@ -198,7 +198,7 @@ async function confirmarEliminacion() {
     @cancel="sensorAEliminar = null"
   >
     <p>
-      Se eliminará <strong>{{ sensorAEliminar.id }} · {{ sensorAEliminar.nombre }}</strong> del inventario. Esta
+      Se eliminará <strong>{{ sensorAEliminar.codigo }} · {{ sensorAEliminar.nombre }}</strong> del inventario. Esta
       acción no se puede deshacer.
     </p>
   </ConfirmModal>

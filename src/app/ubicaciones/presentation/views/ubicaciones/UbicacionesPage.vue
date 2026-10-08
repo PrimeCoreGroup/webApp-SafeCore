@@ -13,7 +13,7 @@ const { data: inmuebles, loading, error, reload } = useAsyncData(getInmuebles);
 </script>
 
 <template>
-  <PageTitle title="Ubicaciones" description="Edificios y espacios supervisados por SafeCore." />
+  <PageTitle title="Ubicaciones" description="Edificios y espacios supervisados por SafeCore." mock />
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <AppCard flush>

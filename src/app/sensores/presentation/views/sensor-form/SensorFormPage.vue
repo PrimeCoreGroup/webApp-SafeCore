@@ -10,6 +10,7 @@ import LoadingState from "@/app/shared/components/ui/LoadingState.vue";
 import PageTitle from "@/app/shared/components/ui/PageTitle.vue";
 import { inputClass } from "@/app/shared/components/ui/form-classes";
 import { useAsyncData } from "@/app/shared/composables/useAsyncData";
+import { isMock } from "@/lib/data-sources";
 import { getInmuebles, getNodos } from "@/app/ubicaciones/data/ubicaciones.service";
 import { createSensor, getSensor, updateSensor } from "../../../data/sensores.service";
 import { SENSOR_ESTADO_UI, SENSOR_TIPOS, SENSOR_TIPO_OPCIONES } from "../../config/sensor-ui";
@@ -20,6 +21,9 @@ const router = useRouter();
 
 const sensorId = route.params.id as string | undefined;
 const editando = !!sensorId;
+
+// Con el backend solo se guardan código, nombre, tipo y estado
+const guardaUbicacion = isMock("sensores");
 
 const { data: inmuebles, loading: cargandoInmuebles, error: errorInmuebles, reload } = useAsyncData(getInmuebles);
 const { data: nodos } = useAsyncData(getNodos);
@@ -46,7 +50,7 @@ if (editando) {
   getSensor(sensorId!)
     .then((sensor) => {
       Object.assign(form, {
-        id: sensor.id,
+        id: sensor.codigo,
         nombre: sensor.nombre,
         tipo: sensor.tipo,
         inmuebleId: sensor.inmuebleId,
@@ -65,7 +69,7 @@ const zonasDisponibles = computed(() => inmuebles.value?.find((i) => i.id === fo
 const nodosDisponibles = computed(() => (nodos.value ?? []).filter((n) => n.inmuebleId === form.inmuebleId));
 const unidad = computed(() => SENSOR_TIPOS[form.tipo].unidad);
 
-// Al cambiar de inmueble se reinician zona y nodo; si solo hay un nodo se preselecciona.
+// Al cambiar de inmueble se reinician zona y nodo
 watch(
   () => form.inmuebleId,
   () => {
@@ -90,10 +94,12 @@ function validar(): boolean {
   Object.keys(errores).forEach((k) => delete errores[k]);
   if (!form.id.trim()) errores.id = "Ingresa el identificador del dispositivo";
   if (!form.nombre.trim()) errores.nombre = "Ingresa un nombre";
-  if (!form.inmuebleId) errores.inmuebleId = "Selecciona un inmueble";
-  if (!form.zonaId) errores.zonaId = "Selecciona una zona";
-  if (!form.nodoId) errores.nodoId = "Selecciona un nodo";
-  if (unidad.value && form.umbralMin !== null && form.umbralMax !== null && form.umbralMin >= form.umbralMax) {
+  if (guardaUbicacion) {
+    if (!form.inmuebleId) errores.inmuebleId = "Selecciona un inmueble";
+    if (!form.zonaId) errores.zonaId = "Selecciona una zona";
+    if (!form.nodoId) errores.nodoId = "Selecciona un nodo";
+  }
+  if (guardaUbicacion && unidad.value && form.umbralMin !== null && form.umbralMax !== null && form.umbralMin >= form.umbralMax) {
     errores.umbralMax = "El umbral máximo debe ser mayor que el mínimo";
   }
   return Object.keys(errores).length === 0;
@@ -134,7 +140,7 @@ function continuar() {
           <FormField
             label="Identificador del dispositivo"
             :error="errores.id"
-            hint="Código del dispositivo (p. ej. TEMP-001)."
+            hint="Código o número de serie del dispositivo (p. ej. TEMP-001)."
           >
             <input v-model="form.id" :disabled="editando" :class="inputClass" placeholder="TEMP-001" />
           </FormField>
@@ -151,11 +157,17 @@ function continuar() {
           </FormField>
           <FormField v-if="editando" label="Estado">
             <select v-model="form.estado" :class="inputClass">
-              <option v-for="(ui, estado) in SENSOR_ESTADO_UI" :key="estado" :value="estado">{{ ui.label }}</option>
+              <template v-for="(ui, estado) in SENSOR_ESTADO_UI" :key="estado">
+                <option v-if="estado !== 'alerta' || form.estado === 'alerta'" :value="estado">{{ ui.label }}</option>
+              </template>
             </select>
           </FormField>
 
-          <FormField label="Inmueble" :error="errores.inmuebleId">
+          <p v-if="!guardaUbicacion" class="rounded-lg bg-slate-50 p-4 text-sm text-muted sm:col-span-2">
+            La ubicación, el nodo Edge y los umbrales se habilitarán cuando el backend los soporte.
+          </p>
+
+          <FormField v-if="guardaUbicacion" label="Inmueble" :error="errores.inmuebleId">
             <select v-model="form.inmuebleId" :class="inputClass">
               <option value="" disabled>Selecciona un inmueble</option>
               <option v-for="inmueble in inmuebles ?? []" :key="inmueble.id" :value="inmueble.id">
@@ -163,7 +175,7 @@ function continuar() {
               </option>
             </select>
           </FormField>
-          <FormField label="Zona" :error="errores.zonaId">
+          <FormField v-if="guardaUbicacion" label="Zona" :error="errores.zonaId">
             <select v-model="form.zonaId" :disabled="!form.inmuebleId" :class="inputClass">
               <option value="" disabled>Selecciona una zona</option>
               <option v-for="zona in zonasDisponibles" :key="zona.id" :value="zona.id">{{ zona.nombre }}</option>
@@ -171,6 +183,7 @@ function continuar() {
           </FormField>
 
           <FormField
+            v-if="guardaUbicacion"
             label="Nodo Edge"
             :error="errores.nodoId"
             hint="Nodo al que se conecta el dispositivo."
@@ -182,7 +195,7 @@ function continuar() {
             </select>
           </FormField>
 
-          <template v-if="unidad">
+          <template v-if="guardaUbicacion && unidad">
             <FormField :label="`Umbral mínimo (${unidad})`">
               <input v-model.number="form.umbralMin" type="number" step="any" :class="inputClass" placeholder="Sin mínimo" />
             </FormField>

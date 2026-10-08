@@ -6,13 +6,17 @@ export type TipoSensor =
   | "humo"
   | "movimiento"
   | "sirena"
-  | "pulsador";
+  | "pulsador"
+  // Categoría desconocida del backend
+  | "otro";
 
 export type EstadoSensor = "activo" | "alerta" | "inactivo";
 
 export type Sensor = {
-  // Identificador del dispositivo (p. ej. TEMP-001); también se usa en la URL
+  // Id interno (en el backend es un UUID)
   id: string;
+  // Código visible; en el backend es el serialNumber
+  codigo: string;
   nombre: string;
   tipo: TipoSensor;
   inmuebleId: string;
@@ -31,8 +35,9 @@ export type Sensor = {
 
 export type Lectura = { fecha: string; valor: string };
 
-// Datos que envía el formulario de registro / edición
+// Datos del formulario
 export type SensorInput = {
+  // Código (serialNumber)
   id: string;
   nombre: string;
   tipo: TipoSensor;

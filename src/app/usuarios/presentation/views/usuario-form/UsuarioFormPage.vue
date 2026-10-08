@@ -9,6 +9,7 @@ import FormField from "@/app/shared/components/ui/FormField.vue";
 import LoadingState from "@/app/shared/components/ui/LoadingState.vue";
 import PageTitle from "@/app/shared/components/ui/PageTitle.vue";
 import { inputClass } from "@/app/shared/components/ui/form-classes";
+import { isMock } from "@/lib/data-sources";
 import { createUsuario, getUsuario, updateUsuario } from "../../../data/usuarios.service";
 import { ROL_LABEL, type UsuarioInput } from "../../models/usuario";
 
@@ -18,7 +19,15 @@ const router = useRouter();
 const usuarioId = route.params.id as string | undefined;
 const editando = !!usuarioId;
 
-const form = reactive<UsuarioInput>({ nombre: "", email: "", rol: "PROPIETARIO", estado: "activo" });
+// Sin roles en el backend: se oculta el campo
+const guardaRol = isMock("usuarios");
+
+const form = reactive<UsuarioInput>({
+  nombre: "",
+  email: "",
+  rol: guardaRol ? "PROPIETARIO" : null,
+  estado: "activo",
+});
 const errores = reactive<Record<string, string>>({});
 
 const cargando = ref(editando);
@@ -87,7 +96,7 @@ function continuar() {
           <FormField label="Correo electrónico" :error="errores.email" class="sm:col-span-2">
             <input v-model="form.email" type="email" :class="inputClass" placeholder="correo@safecore.com" />
           </FormField>
-          <FormField label="Rol">
+          <FormField v-if="guardaRol" label="Rol">
             <select v-model="form.rol" :class="inputClass">
               <option v-for="(label, rol) in ROL_LABEL" :key="rol" :value="rol">{{ label }}</option>
             </select>
@@ -99,6 +108,10 @@ function continuar() {
             </select>
           </FormField>
         </div>
+
+        <p v-if="!guardaRol" class="mt-5 rounded-lg bg-slate-50 p-4 text-sm text-muted">
+          El rol se habilitará cuando el backend lo soporte.
+        </p>
 
         <p v-if="errorGuardado" class="mt-5 text-sm font-medium text-danger" role="alert">{{ errorGuardado }}</p>
 

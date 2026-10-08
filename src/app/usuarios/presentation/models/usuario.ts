@@ -5,7 +5,8 @@ export type Usuario = {
   id: string;
   nombre: string;
   email: string;
-  rol: RolUsuario;
+  // Sin rol si el backend no lo maneja
+  rol: RolUsuario | null;
   estado: EstadoUsuario;
 };
 

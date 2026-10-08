@@ -8,7 +8,7 @@ export type Alerta = {
   ubicacion: string;
   estado: EstadoAlerta;
   fecha: string;
-  // Nombre del dispositivo que originó la alerta y, si es un sensor, su id
+  // Nombre del dispositivo y, si es un sensor, su id
   dispositivo: string;
   dispositivoId: string | null;
   descripcion: string;

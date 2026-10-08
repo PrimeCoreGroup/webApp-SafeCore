@@ -20,7 +20,7 @@ const { data: inmueble, loading, error, reload } = useAsyncData(() => getInmuebl
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <template v-if="inmueble">
-      <PageTitle :title="inmueble.nombre" :description="`${inmueble.direccion} · Edificio supervisado`" />
+      <PageTitle :title="inmueble.nombre" :description="`${inmueble.direccion} · Edificio supervisado`" mock />
 
       <div class="mb-6 grid gap-4 sm:grid-cols-3">
         <StatCard

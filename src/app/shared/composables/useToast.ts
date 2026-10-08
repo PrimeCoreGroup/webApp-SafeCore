@@ -6,7 +6,7 @@ interface Toast {
   message: string
 }
 
-// Module-level singleton — shared across all components
+// Estado compartido
 const toasts = ref<Toast[]>([])
 
 export function useToast() {

@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { clearToken, clearUser, getUser, setUser, type StoredUser } from '@/lib/api'
 
-// Module-level singleton state
+// Estado compartido
 const user = ref<StoredUser | null>(getUser())
 
 export function useAuth() {

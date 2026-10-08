@@ -1,6 +1,6 @@
 import { onMounted, ref, type Ref } from 'vue'
 
-// Carga datos al montar el componente y expone loading / error / reload.
+// Carga datos al montar y expone loading, error y reload
 export function useAsyncData<T>(loader: () => Promise<T>) {
   const data = ref<T | null>(null) as Ref<T | null>
   const loading = ref(true)

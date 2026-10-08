@@ -57,7 +57,7 @@ function iniciales(usuario: Usuario) {
             <span class="block truncate text-xs text-muted">{{ usuario.email }}</span>
           </span>
         </div>
-        <span class="text-sm text-muted">{{ ROL_LABEL[usuario.rol] }}</span>
+        <span class="text-sm text-muted">{{ usuario.rol ? ROL_LABEL[usuario.rol] : "Sin rol definido" }}</span>
         <span>
           <AppBadge
             :tone="usuario.estado === 'activo' ? 'success' : 'neutral'"

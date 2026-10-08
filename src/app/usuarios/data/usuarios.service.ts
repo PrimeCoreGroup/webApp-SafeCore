@@ -1,30 +1,76 @@
-import { api, mockResponse, USE_MOCKS } from "@/lib/api";
+import { api, mockResponse } from "@/lib/api";
+import { isMock } from "@/lib/data-sources";
+import { normalizar } from "@/lib/format";
 import { mockUsuarios } from "../presentation/data/mock-usuarios";
-import type { Usuario, UsuarioInput } from "../presentation/models/usuario";
+import type { EstadoUsuario, Usuario, UsuarioInput } from "../presentation/models/usuario";
 
-// TODO(backend): los paths y el formato de los DTO están pendientes de confirmar con el equipo de backend.
-// En modo mock los cambios se guardan solo en memoria (se pierden al recargar).
-let usuariosMock: Usuario[] = structuredClone(mockUsuarios);
+// Usa Users; con VITE_USE_MOCKS=true usa datos de ejemplo.
 
-// GET /api/v1/users
-export async function getUsuarios(): Promise<Usuario[]> {
-  if (USE_MOCKS) return mockResponse(usuariosMock);
-  return api.get<Usuario[]>("/api/v1/users");
+type UserApi = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  passwordHash: string;
+  status: string;
+};
+
+// El backend exige texto no vacío; se envía un relleno hasta que exista login
+const PASSWORD_PENDIENTE = "pendiente-autenticacion";
+
+const STATUS_INACTIVO = ["inactive", "inactivo", "disabled", "blocked"];
+
+function estadoDesdeApi(status: string): EstadoUsuario {
+  return STATUS_INACTIVO.includes(normalizar(status)) ? "inactivo" : "activo";
 }
 
-// GET /api/v1/users/{id}
+// El backend no maneja roles
+function usuarioDesdeApi(user: UserApi): Usuario {
+  return {
+    id: user.id,
+    nombre: `${user.firstName} ${user.lastName}`.trim(),
+    email: user.email,
+    rol: null,
+    estado: estadoDesdeApi(user.status),
+  };
+}
+
+// "Ana María Torres" -> "Ana" y "María Torres"
+function separarNombre(nombre: string): { firstName: string; lastName: string } {
+  const [firstName = "", ...resto] = nombre.trim().split(/\s+/);
+  return { firstName, lastName: resto.join(" ") || "-" };
+}
+
+function bodyDesdeInput(input: UsuarioInput, passwordHash: string) {
+  return {
+    email: input.email,
+    ...separarNombre(input.nombre),
+    passwordHash,
+    status: input.estado === "activo" ? "active" : "inactive",
+  };
+}
+
+let usuariosMock: Usuario[] = structuredClone(mockUsuarios);
+
+// GET /api/Users
+export async function getUsuarios(): Promise<Usuario[]> {
+  if (isMock("usuarios")) return mockResponse(usuariosMock);
+  return (await api.get<UserApi[]>("/api/Users")).map(usuarioDesdeApi);
+}
+
+// GET /api/Users/{id}
 export async function getUsuario(id: string): Promise<Usuario> {
-  if (USE_MOCKS) {
+  if (isMock("usuarios")) {
     const usuario = usuariosMock.find((u) => u.id === id);
     if (!usuario) throw new Error("Usuario no encontrado");
     return mockResponse(usuario);
   }
-  return api.get<Usuario>(`/api/v1/users/${id}`);
+  return usuarioDesdeApi(await api.get<UserApi>(`/api/Users/${id}`));
 }
 
-// POST /api/v1/users
+// POST /api/Users
 export async function createUsuario(input: UsuarioInput): Promise<Usuario> {
-  if (USE_MOCKS) {
+  if (isMock("usuarios")) {
     if (usuariosMock.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) {
       throw new Error("Ya existe un usuario con ese correo");
     }
@@ -32,15 +78,17 @@ export async function createUsuario(input: UsuarioInput): Promise<Usuario> {
     usuariosMock = [...usuariosMock, usuario];
     return mockResponse(usuario);
   }
-  return api.post<Usuario>("/api/v1/users", input);
+  return usuarioDesdeApi(await api.post<UserApi>("/api/Users", bodyDesdeInput(input, PASSWORD_PENDIENTE)));
 }
 
-// PUT /api/v1/users/{id}
+// PUT /api/Users/{id} (conserva el passwordHash actual)
 export async function updateUsuario(id: string, input: UsuarioInput): Promise<Usuario> {
-  if (USE_MOCKS) {
+  if (isMock("usuarios")) {
     const usuario: Usuario = { id, ...input };
     usuariosMock = usuariosMock.map((u) => (u.id === id ? usuario : u));
     return mockResponse(usuario);
   }
-  return api.put<Usuario>(`/api/v1/users/${id}`, input);
+  const actual = await api.get<UserApi>(`/api/Users/${id}`);
+  await api.put<void>(`/api/Users/${id}`, bodyDesdeInput(input, actual.passwordHash));
+  return getUsuario(id);
 }

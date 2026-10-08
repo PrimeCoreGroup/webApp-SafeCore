@@ -15,7 +15,7 @@ const { data: reportes, loading, error, reload } = useAsyncData(getReportes);
 
 <template>
   <BackButton :to="{ name: 'analitica' }" />
-  <PageTitle title="Reportes" description="Reportes disponibles por periodo y ubicación." />
+  <PageTitle title="Reportes" description="Reportes disponibles por periodo y ubicación." mock />
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <div class="grid gap-4 md:grid-cols-3">

@@ -5,7 +5,7 @@ export type ResumenAnalitica = {
   tendenciaAlertas: string;
   tiempoRespuestaMin: number;
   disponibilidad: number;
-  // Eventos por intervalo del periodo (alto relativo de cada barra, 0–100)
+  // Alto relativo de cada barra (0-100)
   actividad: number[];
   indicadores: Indicador[];
 };

@@ -1,4 +1,5 @@
-import { api, mockResponse, USE_MOCKS } from "@/lib/api";
+import { api, mockResponse } from "@/lib/api";
+import { isMock } from "@/lib/data-sources";
 
 export type LoginRequest = {
   email: string;
@@ -15,12 +16,11 @@ export type LoginResponse = {
   };
 };
 
-// TODO(backend): los paths y el formato de los DTO están pendientes de confirmar con el equipo de backend.
-// En modo mock cualquier correo y contraseña no vacíos inician sesión como administrador.
+// Datos de ejemplo (el backend no tiene login): cualquier credencial entra como administrador.
 
 // POST /api/v1/auth/login
 export async function loginRequest(credentials: LoginRequest): Promise<LoginResponse> {
-  if (USE_MOCKS) {
+  if (isMock("auth")) {
     return mockResponse({
       token: "mock-token",
       user: { id: 1, name: "Alex Rivera", email: credentials.email, role: "ADMIN" },

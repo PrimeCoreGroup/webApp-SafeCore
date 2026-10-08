@@ -18,7 +18,7 @@ export type Inmueble = {
   estado: EstadoUbicacion;
 };
 
-// Un inmueble puede tener varios nodos Edge; cada sensor se asocia a uno.
+// Un inmueble puede tener varios nodos
 export type NodoEdge = {
   id: string;
   nombre: string;
