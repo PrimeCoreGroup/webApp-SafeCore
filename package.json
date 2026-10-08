@@ -1,0 +1,33 @@
+{
+  "name": "safecore-webapp",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc -b --noEmit"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.17.0",
+    "clsx": "2.1.1",
+    "tailwind-merge": "3.2.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.12",
+    "@types/node": "^22.13.10",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "tailwindcss": "4.1.12",
+    "typescript": "^5.8.3",
+    "vite": "6.3.5",
+    "vue-tsc": "^2.2.8"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "6.3.5"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+@theme {
+  --font-sans: "Segoe UI", Roboto, Arial, sans-serif;
+
+  --color-brand: #1e90ff;
+  --color-brand-dark: #0066cc;
+  --color-ink: #1a1a1a;
+  --color-body: #333333;
+  --color-muted: #666666;
+  --color-surface: #f5f5f5;
+  --color-danger: #ff3333;
+  --color-success: #00b84d;
+  --color-warning: #ffb84d;
+  --color-sidebar: #1a1a1a;
+}
