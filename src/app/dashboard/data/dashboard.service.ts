@@ -1,18 +1,18 @@
 import { isMock } from "@/lib/data-sources";
 import { getAlertas } from "@/app/alertas/data/alertas.service";
-import { getSensores } from "@/app/sensores/data/sensores.service";
+import { getNodos } from "@/app/nodos/data/nodos.service";
 import { getInmuebles } from "@/app/ubicaciones/data/ubicaciones.service";
 import type { DashboardData } from "../presentation/models/dashboard";
 
-// Se compone en el cliente con alertas y sensores (no hay endpoint de dashboard)
+// Se compone en el cliente con alertas y nodos (no hay endpoint de dashboard)
 export async function getDashboardData(): Promise<DashboardData> {
-  const [alertas, sensores] = await Promise.all([getAlertas(), getSensores()]);
+  const [alertas, nodos] = await Promise.all([getAlertas(), getNodos()]);
 
   const activas = alertas.filter((a) => a.estado === "activa");
   const criticas = activas.filter((a) => a.severidad === "critica").length;
-  const conectados = sensores.filter((s) => s.estado !== "inactivo").length;
+  const enLinea = nodos.filter((n) => n.estado === "online").length;
 
-  const inmuebles = isMock("sensores") ? await getInmuebles() : null;
+  const inmuebles = isMock("nodos") ? await getInmuebles() : null;
 
   return {
     estadoGeneral: criticas
@@ -22,14 +22,14 @@ export async function getDashboardData(): Promise<DashboardData> {
       valor: activas.length,
       detalle: criticas ? `${criticas} requiere${criticas === 1 ? "" : "n"} atención inmediata` : "Sin alertas críticas",
     },
-    dispositivos: { valor: sensores.length, detalle: `${conectados} conectados` },
+    nodos: { valor: nodos.length, detalle: `${enLinea} en línea` },
     conectividad: {
-      valor: sensores.length ? Math.round((conectados / sensores.length) * 100) : 0,
-      detalle: !sensores.length
-        ? "Sin dispositivos registrados"
-        : conectados === sensores.length
+      valor: nodos.length ? Math.round((enLinea / nodos.length) * 100) : 0,
+      detalle: !nodos.length
+        ? "Sin nodos registrados"
+        : enLinea === nodos.length
           ? "Red estable"
-          : "Hay dispositivos sin conexión",
+          : "Hay nodos sin conexión",
     },
     actividadReciente: alertas.slice(0, 3).map((a) => ({
       id: a.id,
@@ -42,8 +42,8 @@ export async function getDashboardData(): Promise<DashboardData> {
       inmuebles?.map((i) => ({
         id: i.id,
         nombre: i.nombre,
-        dispositivos: i.dispositivos,
-        dispositivosConectados: i.dispositivosConectados,
+        nodos: i.nodos,
+        nodosEnLinea: i.nodosEnLinea,
         estado: i.estado,
       })) ?? null,
   };

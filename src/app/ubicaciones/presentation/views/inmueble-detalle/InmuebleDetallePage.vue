@@ -20,13 +20,13 @@ const { data: inmueble, loading, error, reload } = useAsyncData(() => getInmuebl
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <template v-if="inmueble">
-      <PageTitle :title="inmueble.nombre" :description="`${inmueble.direccion} · Edificio supervisado`" mock />
+      <PageTitle :title="inmueble.nombre" :description="`${inmueble.direccion} · Edificio supervisado`" />
 
       <div class="mb-6 grid gap-4 sm:grid-cols-3">
         <StatCard
           label="Estado"
           :value="ESTADO_UBICACION_UI[inmueble.estado].label"
-          :detail="inmueble.estado === 'operativo' ? 'Sin incidencias' : 'Hay dispositivos que requieren atención'"
+          :detail="inmueble.estado === 'operativo' ? 'Sin incidencias' : 'Hay nodos que requieren atención'"
           :icon="inmueble.estado === 'operativo' ? CircleCheck : TriangleAlert"
           :tone="inmueble.estado === 'operativo' ? 'green' : 'amber'"
         />
@@ -37,9 +37,9 @@ const { data: inmueble, loading, error, reload } = useAsyncData(() => getInmuebl
           :icon="MapPin"
         />
         <StatCard
-          label="Dispositivos"
-          :value="inmueble.dispositivos"
-          :detail="`${inmueble.dispositivosConectados} conectados`"
+          label="Nodos"
+          :value="inmueble.nodos"
+          :detail="`${inmueble.nodosEnLinea} en línea`"
           :icon="Cpu"
         />
       </div>
@@ -59,7 +59,7 @@ const { data: inmueble, loading, error, reload } = useAsyncData(() => getInmuebl
             </span>
             <span class="flex-1">
               <span class="block text-sm font-semibold">{{ zona.nombre }}</span>
-              <span class="block text-xs text-muted">{{ zona.dispositivos }} dispositivos</span>
+              <span class="block text-xs text-muted">{{ zona.nodos }} nodos</span>
             </span>
             <AppBadge :tone="ESTADO_UBICACION_UI[zona.estado].tone" :icon="ESTADO_UBICACION_UI[zona.estado].icon">
               {{ ESTADO_UBICACION_UI[zona.estado].label }}

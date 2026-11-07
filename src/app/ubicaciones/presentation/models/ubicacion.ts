@@ -4,7 +4,7 @@ export type Zona = {
   id: string;
   inmuebleId: string;
   nombre: string;
-  dispositivos: number;
+  nodos: number;
   estado: EstadoUbicacion;
 };
 
@@ -13,16 +13,7 @@ export type Inmueble = {
   nombre: string;
   direccion: string;
   zonas: Zona[];
-  dispositivos: number;
-  dispositivosConectados: number;
+  nodos: number;
+  nodosEnLinea: number;
   estado: EstadoUbicacion;
-};
-
-// Un inmueble puede tener varios nodos
-export type NodoEdge = {
-  id: string;
-  nombre: string;
-  inmuebleId: string;
-  bateria: number;
-  conectividad: "online" | "offline";
 };

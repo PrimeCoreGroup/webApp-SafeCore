@@ -41,28 +41,28 @@ const router = createRouter({
           meta: { title: "Zona" },
         },
         {
-          path: "sensores",
-          name: "sensores",
-          component: () => import("@/app/sensores/presentation/views/sensores/SensoresPage.vue"),
-          meta: { title: "Sensores IoT" },
+          path: "nodos",
+          name: "nodos",
+          component: () => import("@/app/nodos/presentation/views/nodos/NodosPage.vue"),
+          meta: { title: "Nodos" },
         },
         {
-          path: "sensores/nuevo",
-          name: "sensor-nuevo",
-          component: () => import("@/app/sensores/presentation/views/sensor-form/SensorFormPage.vue"),
-          meta: { title: "Registrar sensor" },
+          path: "nodos/nuevo",
+          name: "nodo-nuevo",
+          component: () => import("@/app/nodos/presentation/views/nodo-form/NodoFormPage.vue"),
+          meta: { title: "Registrar nodo" },
         },
         {
-          path: "sensores/:id",
-          name: "sensor-detalle",
-          component: () => import("@/app/sensores/presentation/views/sensor-detalle/SensorDetallePage.vue"),
-          meta: { title: "Detalle del sensor" },
+          path: "nodos/:id",
+          name: "nodo-detalle",
+          component: () => import("@/app/nodos/presentation/views/nodo-detalle/NodoDetallePage.vue"),
+          meta: { title: "Detalle del nodo" },
         },
         {
-          path: "sensores/:id/editar",
-          name: "sensor-editar",
-          component: () => import("@/app/sensores/presentation/views/sensor-form/SensorFormPage.vue"),
-          meta: { title: "Editar sensor" },
+          path: "nodos/:id/editar",
+          name: "nodo-editar",
+          component: () => import("@/app/nodos/presentation/views/nodo-form/NodoFormPage.vue"),
+          meta: { title: "Editar nodo" },
         },
         {
           path: "alertas",
@@ -138,10 +138,10 @@ router.beforeEach((to) => {
   if (!token && !isPublic) return "/login";
 
   // Solo administradores
-  if (token && !isPublic && getUser()?.role !== "ADMIN") return "/login";
+  if (token && !isPublic && !getUser()?.roles.includes("Administrator")) return "/login";
 
   // Con sesión no vuelve al login
-  if (token && isPublic && getUser()?.role === "ADMIN") return "/dashboard";
+  if (token && isPublic && getUser()?.roles.includes("Administrator")) return "/dashboard";
 });
 
 export default router;

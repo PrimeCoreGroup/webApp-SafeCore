@@ -12,15 +12,15 @@ export type ActividadReciente = {
 export type UbicacionResumen = {
   id: string;
   nombre: string;
-  dispositivos: number;
-  dispositivosConectados: number;
+  nodos: number;
+  nodosEnLinea: number;
   estado: EstadoUbicacion;
 };
 
 export type DashboardData = {
   estadoGeneral: { operativo: boolean; detalle: string };
   alertasActivas: { valor: number; detalle: string };
-  dispositivos: { valor: number; detalle: string };
+  nodos: { valor: number; detalle: string };
   conectividad: { valor: number; detalle: string };
   actividadReciente: ActividadReciente[];
   // null si el backend no tiene ubicaciones

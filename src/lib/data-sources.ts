@@ -6,9 +6,9 @@ const forceMock = import.meta.env.VITE_USE_MOCKS === "true";
 const api = (): Source => (forceMock ? "mock" : "api");
 
 export const DATA_SOURCES = {
-  auth: "mock", // sin endpoint de login
-  dashboard: api(), // sensores y alertas
-  sensores: api(), // Devices, SensorReadings
+  auth: api(), // IAM
+  dashboard: api(), // nodos y alertas
+  nodos: api(), // Devices, SensorReadings
   alertas: api(), // RiskSituations
   usuarios: api(), // Users
   ubicaciones: "mock", // sin endpoints

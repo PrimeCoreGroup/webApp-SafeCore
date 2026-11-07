@@ -8,18 +8,13 @@ import LoadingState from "@/app/shared/components/ui/LoadingState.vue";
 import PageTitle from "@/app/shared/components/ui/PageTitle.vue";
 import { useAsyncData } from "@/app/shared/composables/useAsyncData";
 import { getUsuarios } from "../../../data/usuarios.service";
-import { ROL_LABEL, type Usuario } from "../../models/usuario";
+import { ROL_LABEL, nombreCompleto, type Usuario } from "../../models/usuario";
 
 const router = useRouter();
 const { data: usuarios, loading, error, reload } = useAsyncData(getUsuarios);
 
 function iniciales(usuario: Usuario) {
-  return usuario.nombre
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase())
-    .join("");
+  return `${usuario.nombres[0] ?? ""}${usuario.apellidos[0] ?? ""}`.toUpperCase();
 }
 </script>
 
@@ -53,7 +48,7 @@ function iniciales(usuario: Usuario) {
             {{ iniciales(usuario) }}
           </span>
           <span class="min-w-0">
-            <span class="block truncate text-sm font-semibold">{{ usuario.nombre }}</span>
+            <span class="block truncate text-sm font-semibold">{{ nombreCompleto(usuario) }}</span>
             <span class="block truncate text-xs text-muted">{{ usuario.email }}</span>
           </span>
         </div>

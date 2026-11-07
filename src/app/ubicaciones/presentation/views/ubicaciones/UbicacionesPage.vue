@@ -13,7 +13,7 @@ const { data: inmuebles, loading, error, reload } = useAsyncData(getInmuebles);
 </script>
 
 <template>
-  <PageTitle title="Ubicaciones" description="Edificios y espacios supervisados por SafeCore." mock />
+  <PageTitle title="Ubicaciones" description="Edificios y espacios supervisados por SafeCore." />
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <AppCard flush>
@@ -22,7 +22,7 @@ const { data: inmuebles, loading, error, reload } = useAsyncData(getInmuebles);
       >
         <span>Nombre</span>
         <span>Dirección</span>
-        <span>Dispositivos</span>
+        <span>Nodos</span>
         <span>Estado</span>
         <span>Acción</span>
       </div>
@@ -44,7 +44,7 @@ const { data: inmuebles, loading, error, reload } = useAsyncData(getInmuebles);
           {{ inmueble.nombre }}
         </span>
         <span class="text-sm text-muted">{{ inmueble.direccion }}</span>
-        <span class="text-sm">{{ inmueble.dispositivos }} dispositivos</span>
+        <span class="text-sm">{{ inmueble.nodos }} nodos</span>
         <span>
           <AppBadge :tone="ESTADO_UBICACION_UI[inmueble.estado].tone" :icon="ESTADO_UBICACION_UI[inmueble.estado].icon">
             {{ ESTADO_UBICACION_UI[inmueble.estado].label }}

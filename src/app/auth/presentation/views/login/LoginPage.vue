@@ -1,20 +1,25 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { ShieldCheck } from "@lucide/vue";
 import { clearToken, clearUser, setToken } from "@/lib/api";
 import { useAuth } from "@/app/shared/composables/useAuth";
 import { inputClass } from "@/app/shared/components/ui/form-classes";
+import ConfirmModal from "@/app/shared/components/ui/ConfirmModal.vue";
 import FormField from "@/app/shared/components/ui/FormField.vue";
 import { loginRequest } from "../../../data/auth.service";
 
 const router = useRouter();
+const route = useRoute();
 const { login } = useAuth();
 
 const email = ref("");
 const password = ref("");
 const loading = ref(false);
-const error = ref<string | null>(null);
+const error = ref<string | null>(
+  route.query.expired ? "Tu sesión venció. Inicia sesión nuevamente." : null,
+);
+const olvidoContrasena = ref(false);
 
 async function onSubmit() {
   error.value = null;
@@ -28,7 +33,7 @@ async function onSubmit() {
     const { token, user } = await loginRequest({ email: email.value.trim(), password: password.value });
 
     // La web es solo para administradores
-    if (user.role !== "ADMIN") {
+    if (!user.roles.includes("Administrator")) {
       clearToken();
       clearUser();
       error.value = "Esta plataforma es solo para administradores. Usa la app móvil de SafeCore.";
@@ -99,7 +104,11 @@ async function onSubmit() {
             />
           </FormField>
           <div class="text-right">
-            <button type="button" class="text-sm font-semibold text-brand-dark hover:underline">
+            <button
+              type="button"
+              class="text-sm font-semibold text-brand-dark hover:underline"
+              @click="olvidoContrasena = true"
+            >
               ¿Olvidaste tu contraseña?
             </button>
           </div>
@@ -114,11 +123,21 @@ async function onSubmit() {
             {{ loading ? "Ingresando…" : "Iniciar sesión" }}
           </button>
         </form>
-
-        <p class="mt-6 text-center text-xs text-muted">
-          Acceso de demostración: el backend aún no tiene login, así que cualquier correo y contraseña ingresan como administrador.
-        </p>
       </div>
     </section>
   </main>
+
+  <ConfirmModal
+    v-if="olvidoContrasena"
+    title="Restablecer contraseña"
+    tone="info"
+    confirm-label="Entendido"
+    hide-cancel
+    @confirm="olvidoContrasena = false"
+    @cancel="olvidoContrasena = false"
+  >
+    <p>
+      La contraseña la restablece un administrador. Comunícate con él para que te asigne una nueva.
+    </p>
+  </ConfirmModal>
 </template>

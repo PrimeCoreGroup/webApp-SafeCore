@@ -8,8 +8,8 @@ export const mockAlertas: Alerta[] = [
     ubicacion: "Torre Norte · Piso 3",
     estado: "activa",
     fecha: "Hoy, 10:42",
-    dispositivo: "Sensor de humo 03-A",
-    dispositivoId: "SM-005",
+    dispositivo: "Nodo Piso 3",
+    dispositivoId: "nodo-004",
     descripcion:
       "El sensor detectó presencia de humo por encima del umbral configurado. Se requiere verificar la zona y aplicar el protocolo de emergencia correspondiente.",
   },
@@ -20,8 +20,8 @@ export const mockAlertas: Alerta[] = [
     ubicacion: "Edificio Central · Recepción",
     estado: "activa",
     fecha: "Hoy, 09:51",
-    dispositivo: "Sensor de gas",
-    dispositivoId: "GAS-003",
+    dispositivo: "Nodo Recepción Central",
+    dispositivoId: "nodo-006",
     descripcion:
       "La concentración de gas superó el umbral máximo configurado. Verifica la ventilación de la zona y el corte de suministro si corresponde.",
   },
@@ -32,8 +32,8 @@ export const mockAlertas: Alerta[] = [
     ubicacion: "Edificio Central",
     estado: "activa",
     fecha: "Hoy, 09:18",
-    dispositivo: "Nodo Edge 03",
-    dispositivoId: null,
+    dispositivo: "Nodo Sótano",
+    dispositivoId: "nodo-007",
     descripcion:
       "El nodo perdió comunicación con la plataforma de forma intermitente. Mientras tanto opera de forma autónoma con las funciones locales.",
   },
@@ -55,8 +55,8 @@ export const mockAlertas: Alerta[] = [
     ubicacion: "Torre Norte · Piso 1",
     estado: "archivada",
     fecha: "12 Jun, 14:05",
-    dispositivo: "Sensor T-12",
-    dispositivoId: "TEMP-012",
+    dispositivo: "Nodo Piso 1",
+    dispositivoId: "nodo-005",
     descripcion: "La temperatura superó temporalmente el valor esperado y volvió a la normalidad.",
   },
 ];

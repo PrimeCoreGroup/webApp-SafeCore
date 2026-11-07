@@ -26,7 +26,7 @@ function puntos(serie: number[], max: number): string {
 
 <template>
   <BackButton :to="{ name: 'reportes' }" />
-  <PageTitle title="Tendencias" description="Evolución de los principales indicadores." mock />
+  <PageTitle title="Tendencias" description="Evolución de los principales indicadores." />
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <div v-if="tendencias" class="grid gap-6 lg:grid-cols-2">

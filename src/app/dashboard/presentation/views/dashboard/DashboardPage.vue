@@ -40,7 +40,7 @@ const actividadTone = {
           :icon="TriangleAlert"
           tone="red"
         />
-        <StatCard label="Dispositivos" :value="data.dispositivos.valor" :detail="data.dispositivos.detalle" :icon="Cpu" />
+        <StatCard label="Nodos" :value="data.nodos.valor" :detail="data.nodos.detalle" :icon="Cpu" />
         <StatCard
           label="Conectividad"
           :value="`${data.conectividad.valor}%`"
@@ -50,7 +50,7 @@ const actividadTone = {
         />
       </div>
 
-      <div class="mt-6 grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+      <div :class="['mt-6 grid gap-6', data.ubicaciones ? 'xl:grid-cols-[1.4fr_1fr]' : '']">
         <AppCard>
           <div class="mb-5 flex items-center justify-between">
             <div>
@@ -86,13 +86,10 @@ const actividadTone = {
           </div>
         </AppCard>
 
-        <AppCard>
+        <AppCard v-if="data.ubicaciones">
           <h2 class="text-lg font-bold text-ink">Estado por ubicación</h2>
           <p class="mt-1 text-sm text-muted">Resumen de edificios supervisados</p>
-          <p v-if="!data.ubicaciones" class="mt-5 rounded-lg bg-slate-50 p-4 text-sm text-muted">
-            Disponible cuando el backend soporte inmuebles y zonas.
-          </p>
-          <div v-else class="mt-5 space-y-4">
+          <div class="mt-5 space-y-4">
             <RouterLink
               v-for="ubicacion in data.ubicaciones"
               :key="ubicacion.id"
@@ -105,7 +102,7 @@ const actividadTone = {
               <span class="flex-1">
                 <span class="block text-sm font-semibold">{{ ubicacion.nombre }}</span>
                 <span class="block text-xs text-muted">
-                  {{ ubicacion.dispositivosConectados }} / {{ ubicacion.dispositivos }} dispositivos
+                  {{ ubicacion.nodosEnLinea }} / {{ ubicacion.nodos }} nodos
                 </span>
               </span>
               <AppBadge

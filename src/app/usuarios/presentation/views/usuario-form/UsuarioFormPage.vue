@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AppButton from "@/app/shared/components/ui/AppButton.vue";
 import AppCard from "@/app/shared/components/ui/AppCard.vue";
@@ -9,9 +9,8 @@ import FormField from "@/app/shared/components/ui/FormField.vue";
 import LoadingState from "@/app/shared/components/ui/LoadingState.vue";
 import PageTitle from "@/app/shared/components/ui/PageTitle.vue";
 import { inputClass } from "@/app/shared/components/ui/form-classes";
-import { isMock } from "@/lib/data-sources";
 import { createUsuario, getUsuario, updateUsuario } from "../../../data/usuarios.service";
-import { ROL_LABEL, type UsuarioInput } from "../../models/usuario";
+import { ROL_DESCRIPCION, ROL_LABEL, type EstadoUsuario, type RolUsuario } from "../../models/usuario";
 
 const route = useRoute();
 const router = useRouter();
@@ -19,14 +18,13 @@ const router = useRouter();
 const usuarioId = route.params.id as string | undefined;
 const editando = !!usuarioId;
 
-// Sin roles en el backend: se oculta el campo
-const guardaRol = isMock("usuarios");
-
-const form = reactive<UsuarioInput>({
-  nombre: "",
+const form = reactive({
+  nombres: "",
+  apellidos: "",
   email: "",
-  rol: guardaRol ? "PROPIETARIO" : null,
-  estado: "activo",
+  password: "",
+  rol: "Operator" as RolUsuario,
+  estado: "activo" as EstadoUsuario,
 });
 const errores = reactive<Record<string, string>>({});
 
@@ -36,13 +34,21 @@ const guardando = ref(false);
 const errorGuardado = ref<string | null>(null);
 const confirmacion = ref(false);
 
+const descripcionRol = computed(() => ROL_DESCRIPCION[form.rol]);
+
 async function cargar() {
   if (!editando) return;
   cargando.value = true;
   errorCarga.value = null;
   try {
-    const { nombre, email, rol, estado } = await getUsuario(usuarioId!);
-    Object.assign(form, { nombre, email, rol, estado });
+    const usuario = await getUsuario(usuarioId!);
+    Object.assign(form, {
+      nombres: usuario.nombres,
+      apellidos: usuario.apellidos,
+      email: usuario.email,
+      estado: usuario.estado,
+      rol: usuario.rol ?? form.rol,
+    });
   } catch (e) {
     errorCarga.value = e instanceof Error ? e.message : "No se pudo cargar el usuario";
   } finally {
@@ -53,8 +59,15 @@ cargar();
 
 function validar(): boolean {
   Object.keys(errores).forEach((k) => delete errores[k]);
-  if (!form.nombre.trim()) errores.nombre = "Ingresa el nombre completo";
-  if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) errores.email = "Ingresa un correo válido";
+  if (!form.nombres.trim()) errores.nombres = "Ingresa los nombres";
+  if (!form.apellidos.trim()) errores.apellidos = "Ingresa los apellidos";
+  if (!editando) {
+    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) errores.email = "Ingresa un correo válido";
+    const clave = form.password;
+    const valida =
+      clave.length >= 12 && /[a-z]/.test(clave) && /[A-Z]/.test(clave) && /\d/.test(clave) && /[^A-Za-z0-9]/.test(clave);
+    if (!valida) errores.password = "Mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo";
+  }
   return Object.keys(errores).length === 0;
 }
 
@@ -62,10 +75,22 @@ async function guardar() {
   errorGuardado.value = null;
   if (!validar()) return;
   guardando.value = true;
-  const payload: UsuarioInput = { ...form, nombre: form.nombre.trim(), email: form.email.trim() };
   try {
-    if (editando) await updateUsuario(usuarioId!, payload);
-    else await createUsuario(payload);
+    if (editando) {
+      await updateUsuario(usuarioId!, {
+        nombres: form.nombres.trim(),
+        apellidos: form.apellidos.trim(),
+        estado: form.estado,
+      });
+    } else {
+      await createUsuario({
+        nombres: form.nombres.trim(),
+        apellidos: form.apellidos.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        rol: form.rol,
+      });
+    }
     confirmacion.value = true;
   } catch (e) {
     errorGuardado.value = e instanceof Error ? e.message : "No se pudo guardar el usuario";
@@ -90,28 +115,42 @@ function continuar() {
     <form class="max-w-2xl" novalidate @submit.prevent="guardar">
       <AppCard>
         <div class="grid gap-5 sm:grid-cols-2">
-          <FormField label="Nombre completo" :error="errores.nombre" class="sm:col-span-2">
-            <input v-model="form.nombre" :class="inputClass" placeholder="Nombre del usuario" />
+          <FormField label="Nombres" :error="errores.nombres">
+            <input v-model="form.nombres" :class="inputClass" placeholder="Nombres" />
+          </FormField>
+          <FormField label="Apellidos" :error="errores.apellidos">
+            <input v-model="form.apellidos" :class="inputClass" placeholder="Apellidos" />
           </FormField>
           <FormField label="Correo electrónico" :error="errores.email" class="sm:col-span-2">
-            <input v-model="form.email" type="email" :class="inputClass" placeholder="correo@safecore.com" />
+            <input
+              v-model="form.email"
+              type="email"
+              :disabled="editando"
+              :class="inputClass"
+              placeholder="correo@safecore.com"
+            />
           </FormField>
-          <FormField v-if="guardaRol" label="Rol">
-            <select v-model="form.rol" :class="inputClass">
+          <FormField
+            v-if="!editando"
+            label="Contraseña inicial"
+            :error="errores.password"
+            hint="Mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo."
+            class="sm:col-span-2"
+          >
+            <input v-model="form.password" type="password" autocomplete="new-password" :class="inputClass" />
+          </FormField>
+          <FormField label="Rol" :hint="descripcionRol">
+            <select v-model="form.rol" :disabled="editando" :class="inputClass">
               <option v-for="(label, rol) in ROL_LABEL" :key="rol" :value="rol">{{ label }}</option>
             </select>
           </FormField>
-          <FormField label="Estado">
+          <FormField v-if="editando" label="Estado">
             <select v-model="form.estado" :class="inputClass">
               <option value="activo">Activo</option>
               <option value="inactivo">Inactivo</option>
             </select>
           </FormField>
         </div>
-
-        <p v-if="!guardaRol" class="mt-5 rounded-lg bg-slate-50 p-4 text-sm text-muted">
-          El rol se habilitará cuando el backend lo soporte.
-        </p>
 
         <p v-if="errorGuardado" class="mt-5 text-sm font-medium text-danger" role="alert">{{ errorGuardado }}</p>
 
@@ -132,6 +171,6 @@ function continuar() {
     @confirm="continuar"
     @cancel="continuar"
   >
-    <p>{{ editando ? "Los cambios del usuario fueron guardados." : "El usuario fue creado correctamente." }}</p>
+    <p>{{ editando ? "Los cambios del usuario fueron guardados." : "El usuario ya puede iniciar sesión en la app móvil." }}</p>
   </ConfirmModal>
 </template>

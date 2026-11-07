@@ -14,7 +14,7 @@ const { data: resumen, loading, error, reload } = useAsyncData(getResumenAnaliti
 </script>
 
 <template>
-  <PageTitle title="Analítica" description="Indicadores clave del sistema y evolución operativa." mock>
+  <PageTitle title="Analítica" description="Indicadores clave del sistema y evolución operativa.">
     <template #action>
       <AppButton :icon="FileText" @click="router.push({ name: 'reportes' })">Consultar reportes</AppButton>
     </template>

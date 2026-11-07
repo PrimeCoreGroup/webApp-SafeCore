@@ -1,4 +1,4 @@
-import { api, mockResponse } from "@/lib/api";
+import { api, mockResponse, type StoredUser } from "@/lib/api";
 import { isMock } from "@/lib/data-sources";
 
 export type LoginRequest = {
@@ -8,23 +8,30 @@ export type LoginRequest = {
 
 export type LoginResponse = {
   token: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-  };
+  user: StoredUser;
 };
 
-// Datos de ejemplo (el backend no tiene login): cualquier credencial entra como administrador.
+type LoginApi = {
+  token: { accessToken: string; tokenType: string; expiresInSeconds: number };
+  user: { id: string; email: string; firstName: string; lastName: string; roles: string[] };
+};
 
-// POST /api/v1/auth/login
+// POST /api/iam/auth/login
 export async function loginRequest(credentials: LoginRequest): Promise<LoginResponse> {
   if (isMock("auth")) {
     return mockResponse({
       token: "mock-token",
-      user: { id: 1, name: "Alex Rivera", email: credentials.email, role: "ADMIN" },
+      user: { id: "1", name: "Alex Rivera", email: credentials.email, roles: ["Administrator"] },
     });
   }
-  return api.post<LoginResponse>("/api/v1/auth/login", credentials);
+  const { token, user } = await api.post<LoginApi>("/api/iam/auth/login", credentials);
+  return {
+    token: token.accessToken,
+    user: {
+      id: user.id,
+      name: `${user.firstName} ${user.lastName}`.trim(),
+      email: user.email,
+      roles: user.roles,
+    },
+  };
 }

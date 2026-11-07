@@ -1,6 +1,6 @@
 import { api, mockResponse } from "@/lib/api";
 import { isMock } from "@/lib/data-sources";
-import { formatFechaHora, normalizar } from "@/lib/format";
+import { formatFechaHora } from "@/lib/format";
 import { mockAlertas } from "../presentation/data/mock-alertas";
 import type { Alerta, EstadoAlerta, SeveridadAlerta } from "../presentation/models/alerta";
 
@@ -8,54 +8,70 @@ import type { Alerta, EstadoAlerta, SeveridadAlerta } from "../presentation/mode
 
 type RiskSituationApi = {
   id: string;
+  deviceId: string | null;
+  origin: string;
   riskType: string;
   status: string;
   severity: string;
   detectedAt: string;
 };
 
-// Traduce valores libres del backend (español o inglés)
-const TIPO_RIESGO: Record<string, string> = {
-  fire: "Incendio", incendio: "Incendio",
-  earthquake: "Sismo", seismic: "Sismo", sismo: "Sismo",
-  gas: "Fuga de gas", gas_leak: "Fuga de gas",
-  smoke: "Detección de humo", humo: "Detección de humo",
-  temperature: "Temperatura elevada", temperatura: "Temperatura elevada",
+type DeviceApi = { id: string; name: string };
+
+const EVENTO: Record<string, { titulo: string; descripcion: string }> = {
+  Fire: {
+    titulo: "Incendio",
+    descripcion: "La temperatura superó el umbral de seguridad. Verifica la zona y aplica el protocolo de emergencia.",
+  },
+  GasOrSmoke: {
+    titulo: "Humo o gas",
+    descripcion: "Se detectó gas o humo en el ambiente. Verifica la ventilación y la zona afectada.",
+  },
+  Earthquake: {
+    titulo: "Sismo o impacto",
+    descripcion: "Se detectó un movimiento brusco. Verifica el estado de la edificación y de las personas.",
+  },
+  SensorFault: {
+    titulo: "Falla de sensor",
+    descripcion: "Un sensor del nodo reportó una falla o está desconectado. Revisa el nodo.",
+  },
 };
 
 const SEVERIDAD: Record<string, SeveridadAlerta> = {
-  critical: "critica", critica: "critica", high: "critica", alta: "critica",
-  warning: "advertencia", advertencia: "advertencia", medium: "advertencia", media: "advertencia",
-  info: "informacion", informacion: "informacion", low: "informacion", baja: "informacion",
+  Critical: "critica",
+  High: "critica",
+  Medium: "advertencia",
+  Low: "informacion",
 };
 
 const ESTADO: Record<string, EstadoAlerta> = {
-  active: "activa", activa: "activa", open: "activa", detected: "activa",
-  resolved: "resuelta", resuelta: "resuelta", closed: "resuelta",
-  archived: "archivada", archivada: "archivada",
+  Open: "activa",
+  Acknowledged: "activa",
+  Resolved: "resuelta",
 };
 
 // Estado que se envía al resolver
-const STATUS_RESUELTA = "resolved";
+const STATUS_RESUELTA = "Resolved";
 
-function capitalizar(texto: string): string {
-  return texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : "Situación de riesgo";
-}
-
-// El backend no tiene ubicación, dispositivo ni descripción
-function alertaDesdeApi(riesgo: RiskSituationApi): Alerta {
-  const evento = TIPO_RIESGO[normalizar(riesgo.riskType)] ?? capitalizar(riesgo.riskType);
+function alertaDesdeApi(riesgo: RiskSituationApi, nodos: Map<string, string>): Alerta {
+  const evento = EVENTO[riesgo.riskType];
+  const origen = riesgo.origin === "Sensor" ? "Detectada automáticamente por un sensor." : "Registrada manualmente.";
   return {
     id: riesgo.id,
-    evento,
-    severidad: SEVERIDAD[normalizar(riesgo.severity)] ?? "advertencia",
+    evento: evento?.titulo ?? riesgo.riskType,
+    severidad: SEVERIDAD[riesgo.severity] ?? "advertencia",
     ubicacion: "Sin ubicación",
-    estado: ESTADO[normalizar(riesgo.status)] ?? "activa",
+    estado: ESTADO[riesgo.status] ?? "activa",
     fecha: formatFechaHora(riesgo.detectedAt),
-    dispositivo: "Sin dispositivo asociado",
-    dispositivoId: null,
-    descripcion: `Situación de riesgo de tipo "${riesgo.riskType}" con severidad "${riesgo.severity}", detectada por el sistema.`,
+    dispositivo: riesgo.deviceId ? (nodos.get(riesgo.deviceId) ?? "Nodo") : "Sin nodo asociado",
+    dispositivoId: riesgo.deviceId,
+    descripcion: `${evento?.descripcion ?? "Situación de riesgo detectada."} ${origen}`,
   };
+}
+
+async function nombresDeNodos(): Promise<Map<string, string>> {
+  const nodos = await api.get<DeviceApi[]>("/api/devices?page=1&pageSize=250").catch(() => [] as DeviceApi[]);
+  return new Map(nodos.map((n) => [n.id, n.name]));
 }
 
 let alertasMock: Alerta[] = structuredClone(mockAlertas);
@@ -63,11 +79,14 @@ let alertasMock: Alerta[] = structuredClone(mockAlertas);
 // GET /api/RiskSituations
 export async function getAlertas(): Promise<Alerta[]> {
   if (isMock("alertas")) return mockResponse(alertasMock, 0);
-  const riesgos = await api.get<RiskSituationApi[]>("/api/RiskSituations");
+  const [riesgos, nodos] = await Promise.all([
+    api.get<RiskSituationApi[]>("/api/RiskSituations?page=1&pageSize=250"),
+    nombresDeNodos(),
+  ]);
   return riesgos
     .slice()
     .sort((a, b) => new Date(b.detectedAt).getTime() - new Date(a.detectedAt).getTime())
-    .map(alertaDesdeApi);
+    .map((riesgo) => alertaDesdeApi(riesgo, nodos));
 }
 
 // GET /api/RiskSituations/{id}
@@ -77,10 +96,14 @@ export async function getAlerta(id: string): Promise<Alerta> {
     if (!alerta) throw new Error("Alerta no encontrada");
     return mockResponse(alerta);
   }
-  return alertaDesdeApi(await api.get<RiskSituationApi>(`/api/RiskSituations/${id}`));
+  const [riesgo, nodos] = await Promise.all([
+    api.get<RiskSituationApi>(`/api/RiskSituations/${id}`),
+    nombresDeNodos(),
+  ]);
+  return alertaDesdeApi(riesgo, nodos);
 }
 
-// PUT /api/RiskSituations/{id} (reenvía los campos actuales)
+// PUT /api/RiskSituations/{id} (reenvía los campos actuales; responde 204)
 export async function resolverAlerta(id: string): Promise<Alerta> {
   if (isMock("alertas")) {
     const alerta = alertasMock.find((a) => a.id === id);

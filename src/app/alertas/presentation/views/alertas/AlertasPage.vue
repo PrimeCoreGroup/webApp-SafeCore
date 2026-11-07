@@ -57,7 +57,7 @@ const filtradas = computed(() =>
         <span>Ubicación</span>
         <span>Estado</span>
         <span>Fecha / hora</span>
-        <span>Dispositivo</span>
+        <span>Nodo</span>
         <span />
       </div>
 

@@ -44,7 +44,7 @@ function filas(a: Alerta): [string, string][] {
     ["Severidad", SEVERIDAD_UI[a.severidad].label],
     ["Ubicación", a.ubicacion],
     ["Fecha / hora", a.fecha],
-    ["Dispositivo", a.dispositivo],
+    ["Nodo", a.dispositivo],
     ["Estado", ESTADO_ALERTA_LABEL[a.estado]],
   ];
 }
@@ -75,10 +75,10 @@ function filas(a: Alerta): [string, string][] {
           </dl>
           <RouterLink
             v-if="alerta.dispositivoId"
-            :to="{ name: 'sensor-detalle', params: { id: alerta.dispositivoId } }"
+            :to="{ name: 'nodo-detalle', params: { id: alerta.dispositivoId } }"
             class="mt-2 inline-block text-sm font-semibold text-brand-dark hover:underline"
           >
-            Ver dispositivo
+            Ver nodo
           </RouterLink>
         </AppCard>
 

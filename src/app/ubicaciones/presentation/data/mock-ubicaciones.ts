@@ -1,6 +1,4 @@
-import type { NodoEdge } from "../models/ubicacion";
-
-// Catálogo base; contadores y estado se derivan de los sensores
+// Catálogo base; contadores y estado se derivan de los nodos
 export type InmuebleBase = { id: string; nombre: string; direccion: string };
 export type ZonaBase = { id: string; inmuebleId: string; nombre: string };
 
@@ -20,11 +18,4 @@ export const mockZonas: ZonaBase[] = [
   { id: "z-3-1", inmuebleId: "inm-3", nombre: "Recepción" },
   { id: "z-3-2", inmuebleId: "inm-3", nombre: "Entrada principal" },
   { id: "z-3-3", inmuebleId: "inm-3", nombre: "Sótano" },
-];
-
-export const mockNodos: NodoEdge[] = [
-  { id: "nodo-1", nombre: "Nodo Edge 01", inmuebleId: "inm-1", bateria: 92, conectividad: "online" },
-  { id: "nodo-4", nombre: "Nodo Edge 04", inmuebleId: "inm-1", bateria: 64, conectividad: "online" },
-  { id: "nodo-2", nombre: "Nodo Edge 02", inmuebleId: "inm-2", bateria: 78, conectividad: "online" },
-  { id: "nodo-3", nombre: "Nodo Edge 03", inmuebleId: "inm-3", bateria: 85, conectividad: "online" },
 ];

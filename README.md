@@ -1,6 +1,6 @@
 # SafeCore — Web de administración
 
-Frontend (SPA) de SafeCore, plataforma IoT de protección sísmica y contra incendios. Es solo para administradores; propietarios y residentes usan la app móvil.
+Frontend (SPA) de SafeCore, plataforma IoT de protección sísmica y contra incendios. Es solo para administradores. Los operadores, responsables de seguridad y residentes usan la app móvil.
 
 **Tecnologías:** Vue 3 · TypeScript · Vite · Vue Router · Tailwind CSS 4 · Lucide · pnpm
 
@@ -12,32 +12,35 @@ pnpm dev        # http://localhost:5173
 pnpm build      # typecheck (vue-tsc) + build de producción
 ```
 
-No hace falta configurar nada: en desarrollo, las llamadas a `/api` se reenvían al backend de Render mediante un proxy de Vite.
+En desarrollo, las llamadas a `/api` se reenvían al backend de Render mediante un proxy de Vite. Para entrar se necesita un usuario administrador del backend.
 
-## ¿Qué usa el backend y qué son datos de ejemplo?
+## Módulos y origen de datos
 
-Backend: https://backend-safecore.onrender.com/swagger/index.html
+| Módulo | Origen | Endpoints del backend |
+| ------ | ------ | --------------------- |
+| **Inicio de sesión** | Backend | `POST /api/iam/auth/login` |
+| **Usuarios** | Backend | `/api/users` |
+| **Nodos** | Backend | `/api/devices`, `/api/SensorReadings` |
+| **Alertas** | Backend | `/api/RiskSituations` |
+| **Panel principal** | Backend | Se arma con nodos y alertas |
+| **Ubicaciones** | Datos de ejemplo | — |
+| **Analítica** | Datos de ejemplo | — |
+| **Configuración** | Datos de ejemplo | — |
 
-| Módulo | Origen | Endpoints del backend | Qué falta |
-| ------ | ------ | --------------------- | --------- |
-| **Sensores IoT** | Backend | `Devices`, `SensorReadings` | Ubicación, nodo y umbrales (no existen en el backend): quedan "Sin asignar". El botón "Probar" se oculta. |
-| **Alertas** | Backend | `RiskSituations` | Ubicación, dispositivo y descripción de la alerta. |
-| **Usuarios** | Backend | `Users` | Rol (el backend no lo maneja): se muestra "Sin rol definido". |
-| **Panel principal** | Backend | Se arma con sensores y alertas | La tarjeta "Estado por ubicación" no se muestra. |
-| **Inicio de sesión** | Datos de ejemplo | — (`AuthController` está vacío) | Cualquier correo y contraseña ingresan como administrador. |
-| **Ubicaciones** | Datos de ejemplo | — | El backend no tiene inmuebles, zonas ni nodos. |
-| **Analítica** | Datos de ejemplo | — | Sin endpoints. |
-| **Configuración** | Datos de ejemplo | — | `SystemConfigurations` no cubre estas opciones. |
-
-Las pantallas con datos de ejemplo muestran la insignia **"Datos de ejemplo"** junto al título. Esos datos viven solo en memoria: los cambios se pierden al recargar.
+Los datos de ejemplo viven solo en memoria: los cambios se pierden al recargar.
 
 Para trabajar sin conexión al backend: crear un `.env` con `VITE_USE_MOCKS=true`, que fuerza todos los módulos a datos de ejemplo.
 
-## Cómo conectar un módulo nuevo
+## Sesión y roles
 
-1. Cambiar su origen en `src/lib/data-sources.ts` (`"mock"` → `api()`).
-2. En su servicio (`src/app/<modulo>/data/*.service.ts`) completar la rama real: cada función ya tiene su estructura y los datos de ejemplo siguen como respaldo.
-3. Actualizar la tabla de arriba.
+- El login devuelve un token que dura 15 minutos; al vencer, la web vuelve al login.
+- Solo entra el rol `Administrator`. Los demás roles reciben un aviso para usar la app móvil.
+- Desde Usuarios, el administrador crea cuentas con los roles `Administrator`, `Operator`, `Responder` y `Resident`.
+- La contraseña de un usuario la restablece un administrador.
+
+## Modelo de nodos
+
+Un **nodo** es el controlador (ESP32) instalado en un inmueble, con sus sensores (temperatura, humo y gas, movimiento) y sus actuadores (luces LED, sonido, servomotor de puerta). En el backend es un `Device`: se registra con su número de serie y el backend entrega un secreto, que se muestra una sola vez, para que el nodo se conecte. Los sensores se leen de las lecturas que envía el nodo.
 
 ## Despliegue (Vercel)
 
@@ -48,24 +51,16 @@ Para trabajar sin conexión al backend: crear un `.env` con `VITE_USE_MOCKS=true
 ```
 src/
 ├── lib/
-│   ├── api.ts            cliente HTTP
+│   ├── api.ts            cliente HTTP y sesión
 │   ├── data-sources.ts   origen de datos por módulo (api / mock)
-│   └── format.ts         fechas y textos
-├── router/index.ts       rutas + guard (sesión y rol ADMIN)
+│   ├── format.ts         fechas y textos
+│   └── messages.ts       mensajes de error del backend en español
+├── router/index.ts       rutas + guard (sesión y rol administrador)
 ├── styles/               Tailwind y colores (theme.css)
 └── app/
-    ├── auth/  dashboard/  ubicaciones/  sensores/
+    ├── auth/  dashboard/  ubicaciones/  nodos/
     ├── alertas/  analitica/  usuarios/  configuracion/
     │     ├── data/           servicio (backend + datos de ejemplo)
     │     └── presentation/   views, models, config y data de ejemplo
     └── shared/               layout, componentes UI y composables
 ```
-
-## Notas sobre el backend actual
-
-Mientras el backend siga así, el frontend se adapta de esta forma:
-
-- `category`, `connectivityStatus`, `riskType`, `severity` y `status` son texto libre en el backend; el frontend entiende valores en español o inglés (por ejemplo `online`/`offline`, `active`/`resolved`).
-- Todos los campos de los DTO son obligatorios (no vacíos).
-- Al crear un usuario se envía `passwordHash: "pendiente-autenticacion"`, porque aún no hay login ni cifrado de contraseñas.
-- Al resolver una alerta se envía `status: "resolved"`.

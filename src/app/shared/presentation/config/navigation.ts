@@ -14,5 +14,5 @@ export const navigation: NavItem[] = [
   { label: "Analítica", icon: ChartColumn, route: "/analitica" },
   { label: "Usuarios", icon: Users, route: "/usuarios" },
   { label: "Configuración", icon: Settings, route: "/configuracion" },
-  { label: "Sensores IoT", icon: Cpu, route: "/sensores" },
+  { label: "Nodos", icon: Cpu, route: "/nodos" },
 ];

@@ -6,7 +6,7 @@ const user = ref<StoredUser | null>(getUser())
 
 export function useAuth() {
   const isAuthenticated = computed(() => user.value !== null)
-  const isAdmin = computed(() => user.value?.role === 'ADMIN')
+  const isAdmin = computed(() => user.value?.roles.includes('Administrator') ?? false)
   const initials = computed(() =>
     (user.value?.name ?? '')
       .split(' ')
