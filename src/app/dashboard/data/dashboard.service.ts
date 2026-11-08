@@ -1,4 +1,3 @@
-import { isMock } from "@/lib/data-sources";
 import { getAlertas } from "@/app/alertas/data/alertas.service";
 import { getNodos } from "@/app/nodos/data/nodos.service";
 import { getInmuebles } from "@/app/ubicaciones/data/ubicaciones.service";
@@ -12,7 +11,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   const criticas = activas.filter((a) => a.severidad === "critica").length;
   const enLinea = nodos.filter((n) => n.estado === "online").length;
 
-  const inmuebles = isMock("nodos") ? await getInmuebles() : null;
+  const inmuebles = await getInmuebles().catch(() => []);
 
   return {
     estadoGeneral: criticas
@@ -38,13 +37,12 @@ export async function getDashboardData(): Promise<DashboardData> {
       tiempo: a.fecha,
       severidad: a.severidad,
     })),
-    ubicaciones:
-      inmuebles?.map((i) => ({
-        id: i.id,
-        nombre: i.nombre,
-        nodos: i.nodos,
-        nodosEnLinea: i.nodosEnLinea,
-        estado: i.estado,
-      })) ?? null,
+    ubicaciones: inmuebles.map((i) => ({
+      id: i.id,
+      nombre: i.nombre,
+      nodos: i.nodos,
+      nodosEnLinea: i.nodosEnLinea,
+      estado: i.estado,
+    })),
   };
 }

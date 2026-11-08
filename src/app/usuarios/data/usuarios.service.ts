@@ -2,6 +2,7 @@ import { api, mockResponse } from "@/lib/api";
 import { isMock } from "@/lib/data-sources";
 import { mockUsuarios } from "../presentation/data/mock-usuarios";
 import type {
+  Asignacion,
   EstadoUsuario,
   RolUsuario,
   Usuario,
@@ -91,4 +92,32 @@ export async function updateUsuario(id: string, cambios: UsuarioCambios): Promis
     status: cambios.estado === "activo" ? "Active" : "Disabled",
   });
   return getUsuario(id);
+}
+
+type AssignmentApi = { propertyId: string; zoneId: string | null };
+
+const asignacionesMock = new Map<string, Asignacion[]>();
+
+// GET /api/users/{id}/assignments
+export async function getAsignaciones(id: string): Promise<Asignacion[]> {
+  if (isMock("usuarios")) return mockResponse(asignacionesMock.get(id) ?? []);
+  const asignaciones = await api.get<AssignmentApi[]>(`/api/users/${id}/assignments`);
+  return asignaciones.map((a) => ({ inmuebleId: a.propertyId, zonaId: a.zoneId }));
+}
+
+// PUT /api/users/{id}/assignments (reemplaza todas las asignaciones; responde 204)
+export async function saveAsignaciones(id: string, asignaciones: Asignacion[]): Promise<void> {
+  if (isMock("usuarios")) {
+    asignacionesMock.set(id, structuredClone(asignaciones));
+    return mockResponse(undefined);
+  }
+  await api.put<void>(`/api/users/${id}/assignments`, {
+    assignments: asignaciones.map((a) => ({ propertyId: a.inmuebleId, zoneId: a.zonaId })),
+  });
+}
+
+// POST /api/users/{id}/reset-password (el usuario deberá cambiarla al iniciar sesión)
+export async function resetPassword(id: string, nuevaPassword: string): Promise<void> {
+  if (isMock("usuarios")) return mockResponse(undefined);
+  await api.post<void>(`/api/users/${id}/reset-password`, { newPassword: nuevaPassword });
 }

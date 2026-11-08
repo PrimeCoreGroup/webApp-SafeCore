@@ -19,6 +19,7 @@ const loading = ref(false);
 const error = ref<string | null>(
   route.query.expired ? "Tu sesión venció. Inicia sesión nuevamente." : null,
 );
+const info = ref<string | null>(route.query.changed ? "Contraseña actualizada. Inicia sesión con la nueva." : null);
 const olvidoContrasena = ref(false);
 
 async function onSubmit() {
@@ -42,7 +43,7 @@ async function onSubmit() {
 
     setToken(token);
     login(user);
-    await router.replace("/dashboard");
+    await router.replace(user.mustChangePassword ? "/cambiar-contrasena" : "/dashboard");
   } catch (e) {
     error.value = e instanceof Error ? e.message : "No se pudo iniciar sesión.";
   } finally {
@@ -113,6 +114,7 @@ async function onSubmit() {
             </button>
           </div>
 
+          <p v-if="info" class="text-sm font-medium text-success" role="status">{{ info }}</p>
           <p v-if="error" class="text-sm font-medium text-danger" role="alert">{{ error }}</p>
 
           <button

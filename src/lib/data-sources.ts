@@ -11,9 +11,9 @@ export const DATA_SOURCES = {
   nodos: api(), // Devices, SensorReadings
   alertas: api(), // RiskSituations
   usuarios: api(), // Users
-  ubicaciones: "mock", // sin endpoints
-  analitica: "mock", // sin endpoints
-  configuracion: "mock", // no coincide con SystemConfigurations
+  ubicaciones: api(), // Properties, Zones
+  analitica: api(), // Analytics
+  configuracion: api(), // Settings
 } satisfies Record<string, Source>;
 
 export type DataModule = keyof typeof DATA_SOURCES;

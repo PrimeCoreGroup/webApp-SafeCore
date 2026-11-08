@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { Check, Copy, KeyRound } from "@lucide/vue";
 import AppButton from "@/app/shared/components/ui/AppButton.vue";
 
-defineProps<{ secreto: string; titulo: string }>();
+defineProps<{ secreto: string; titulo: string; aviso?: string | null }>();
 const emit = defineEmits<{ cerrar: [] }>();
 
 const copiado = ref(false);
@@ -39,6 +39,8 @@ async function copiar(secreto: string) {
       <div class="mt-5 break-all rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm text-ink">
         {{ secreto }}
       </div>
+
+      <p v-if="aviso" class="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-[#945B00]" role="alert">{{ aviso }}</p>
 
       <div class="mt-7 flex justify-end gap-3">
         <AppButton variant="secondary" :icon="copiado ? Check : Copy" @click="copiar(secreto)">

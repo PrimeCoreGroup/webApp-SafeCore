@@ -12,6 +12,11 @@ const router = createRouter({
       meta: { public: true },
     },
     {
+      path: "/cambiar-contrasena",
+      name: "cambiar-contrasena",
+      component: () => import("@/app/auth/presentation/views/cambiar-contrasena/CambiarContrasenaPage.vue"),
+    },
+    {
       path: "/",
       component: AppShell,
       redirect: "/dashboard",
@@ -27,6 +32,30 @@ const router = createRouter({
           name: "ubicaciones",
           component: () => import("@/app/ubicaciones/presentation/views/ubicaciones/UbicacionesPage.vue"),
           meta: { title: "Ubicaciones" },
+        },
+        {
+          path: "ubicaciones/nuevo",
+          name: "inmueble-nuevo",
+          component: () => import("@/app/ubicaciones/presentation/views/inmueble-form/InmuebleFormPage.vue"),
+          meta: { title: "Agregar inmueble" },
+        },
+        {
+          path: "ubicaciones/:inmuebleId/editar",
+          name: "inmueble-editar",
+          component: () => import("@/app/ubicaciones/presentation/views/inmueble-form/InmuebleFormPage.vue"),
+          meta: { title: "Editar inmueble" },
+        },
+        {
+          path: "ubicaciones/:inmuebleId/zonas/nueva",
+          name: "zona-nueva",
+          component: () => import("@/app/ubicaciones/presentation/views/zona-form/ZonaFormPage.vue"),
+          meta: { title: "Agregar zona" },
+        },
+        {
+          path: "ubicaciones/:inmuebleId/zonas/:zonaId/editar",
+          name: "zona-editar",
+          component: () => import("@/app/ubicaciones/presentation/views/zona-form/ZonaFormPage.vue"),
+          meta: { title: "Editar zona" },
         },
         {
           path: "ubicaciones/:inmuebleId",
@@ -132,16 +161,22 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const token = getToken();
+  const user = getUser();
   const isPublic = to.meta.public === true;
 
   // Sin sesión solo accede a rutas públicas
   if (!token && !isPublic) return "/login";
 
   // Solo administradores
-  if (token && !isPublic && !getUser()?.roles.includes("Administrator")) return "/login";
+  if (token && !isPublic && !user?.roles.includes("Administrator")) return "/login";
+
+  // Tras un restablecimiento solo puede cambiar su contraseña
+  if (token && user?.mustChangePassword && to.name !== "cambiar-contrasena") return "/cambiar-contrasena";
 
   // Con sesión no vuelve al login
-  if (token && isPublic && getUser()?.roles.includes("Administrator")) return "/dashboard";
+  if (token && isPublic && user?.roles.includes("Administrator")) {
+    return user.mustChangePassword ? "/cambiar-contrasena" : "/dashboard";
+  }
 });
 
 export default router;

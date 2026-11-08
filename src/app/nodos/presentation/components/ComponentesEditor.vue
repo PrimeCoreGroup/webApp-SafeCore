@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Minus, Plus } from "@lucide/vue";
 import { ACTUADOR_TIPOS, ACTUADOR_UI, SENSOR_TIPOS, SENSOR_UI } from "../config/nodo-ui";
-import type { ComponentesNodo } from "../models/nodo";
+import type { KitNodo } from "../models/nodo";
 
-const model = defineModel<ComponentesNodo>({ required: true });
+const model = defineModel<KitNodo>({ required: true });
 
-type Clave = keyof ComponentesNodo;
+type Clave = keyof KitNodo;
 
 function cantidad(clave: Clave, tipo: string): number {
   return (model.value[clave] as string[]).filter((t) => t === tipo).length;
@@ -18,12 +18,12 @@ function cambiar(clave: Clave, tipo: string, delta: 1 | -1) {
     const indice = lista.lastIndexOf(tipo);
     if (indice >= 0) lista.splice(indice, 1);
   }
-  model.value = { ...model.value, [clave]: lista } as ComponentesNodo;
+  model.value = { ...model.value, [clave]: lista } as KitNodo;
 }
 
 const grupos = [
-  { clave: "sensores" as Clave, titulo: "Sensores", tipos: SENSOR_TIPOS, ui: SENSOR_UI as Record<string, (typeof SENSOR_UI)[keyof typeof SENSOR_UI]> },
-  { clave: "actuadores" as Clave, titulo: "Actuadores", tipos: ACTUADOR_TIPOS, ui: ACTUADOR_UI as Record<string, (typeof ACTUADOR_UI)[keyof typeof ACTUADOR_UI]> },
+  { clave: "sensores" as Clave, titulo: "Sensores", tipos: SENSOR_TIPOS as string[], ui: SENSOR_UI as Record<string, { label: string; icono: object }> },
+  { clave: "actuadores" as Clave, titulo: "Actuadores", tipos: ACTUADOR_TIPOS as string[], ui: ACTUADOR_UI as Record<string, { label: string; icono: object }> },
 ];
 </script>
 

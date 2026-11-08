@@ -85,7 +85,10 @@ const filtradas = computed(() =>
         <span class="text-sm text-muted">{{ alerta.ubicacion }}</span>
         <span class="text-sm font-semibold">{{ ESTADO_ALERTA_LABEL[alerta.estado] }}</span>
         <span class="text-sm text-muted">{{ alerta.fecha }}</span>
-        <span class="text-sm">{{ alerta.dispositivo }}</span>
+        <span class="text-sm">
+          {{ alerta.dispositivo }}
+          <span v-if="alerta.componente" class="block text-xs text-muted">{{ alerta.componente }}</span>
+        </span>
         <span class="inline-flex items-center gap-1 text-sm font-semibold text-brand-dark">
           Ver detalles
           <ChevronRight class="size-4" aria-hidden="true" />

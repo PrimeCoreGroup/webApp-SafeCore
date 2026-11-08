@@ -11,5 +11,7 @@ export type Alerta = {
   // Nombre del dispositivo y, si es un sensor, su id
   dispositivo: string;
   dispositivoId: string | null;
+  // Componente del nodo que originó la alerta
+  componente?: string | null;
   descripcion: string;
 };

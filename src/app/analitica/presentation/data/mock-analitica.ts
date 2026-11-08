@@ -1,27 +1,35 @@
-import type { Reporte, ResumenAnalitica, Tendencias } from "../models/analitica";
+import type { PuntoTendencia, Reporte, ResumenAnalitica } from "../models/analitica";
 
 export const mockResumen: ResumenAnalitica = {
-  alertasPeriodo: 24,
-  tendenciaAlertas: "Tendencia estable",
-  tiempoRespuestaMin: 4,
-  disponibilidad: 98,
-  actividad: [45, 62, 48, 75, 55, 68, 42, 58, 82, 64, 52, 70],
-  indicadores: [
-    { label: "Alertas atendidas", valor: 91 },
-    { label: "Dispositivos conectados", valor: 96 },
-    { label: "Protocolos completados", valor: 88 },
+  total: 24,
+  porTipo: [
+    { clave: "Fire", etiqueta: "Incendio", cantidad: 6 },
+    { clave: "GasOrSmoke", etiqueta: "Humo o gas", cantidad: 9 },
+    { clave: "Earthquake", etiqueta: "Sismo o impacto", cantidad: 5 },
+    { clave: "SensorFault", etiqueta: "Falla de sensor", cantidad: 4 },
   ],
+  porSeveridad: [
+    { clave: "Critical", etiqueta: "Crítica", cantidad: 8 },
+    { clave: "High", etiqueta: "Alta", cantidad: 6 },
+    { clave: "Medium", etiqueta: "Media", cantidad: 7 },
+    { clave: "Low", etiqueta: "Baja", cantidad: 3 },
+  ],
+  resueltasPct: 91,
+  tiempoRespuestaMin: 4,
+  disponibilidadPct: 96,
 };
+
+export function mockTendencias(dias: number): PuntoTendencia[] {
+  const base = [3, 5, 4, 7, 5, 6, 3, 5, 8, 6, 5, 7];
+  return Array.from({ length: Math.min(dias, 12) }, (_, i) => {
+    const registradas = base[i % base.length]!;
+    const fecha = new Date(Date.now() - (Math.min(dias, 12) - 1 - i) * 86400000).toISOString();
+    return { fecha, registradas, atendidas: Math.max(0, registradas - (i % 3)) };
+  });
+}
 
 export const mockReportes: Reporte[] = [
-  { id: "rep-1", nombre: "Resumen de alertas", periodo: "Periodo actual", ubicacion: "Todas las ubicaciones", tipo: "Información operativa" },
-  { id: "rep-2", nombre: "Estado de dispositivos", periodo: "Últimos 30 días", ubicacion: "Sede Principal", tipo: "Información operativa" },
-  { id: "rep-3", nombre: "Actividad operativa", periodo: "Periodo anterior", ubicacion: "Todas las ubicaciones", tipo: "Información operativa" },
+  { id: "alerts-summary", nombre: "Resumen de alertas", descripcion: "Riesgos por tipo, severidad y estado para un periodo.", formato: "json" },
+  { id: "device-status", nombre: "Estado de dispositivos", descripcion: "Estado actual y última comunicación de los nodos visibles.", formato: "json" },
+  { id: "operations", nombre: "Actividad operativa", descripcion: "Tendencia temporal de alertas registradas y atendidas.", formato: "json" },
 ];
-
-export const mockTendencias: Tendencias = {
-  alertasRegistradas: [30, 55, 45, 20, 35, 15, 25, 10, 20],
-  alertasAtendidas: [15, 25, 35, 20, 30, 25, 40, 20, 30],
-  variacionPeriodo: "-8%",
-  respuestaPromedioMin: 4,
-};

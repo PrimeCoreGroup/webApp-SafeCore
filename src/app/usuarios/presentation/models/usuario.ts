@@ -26,6 +26,9 @@ export type UsuarioCambios = {
   estado: EstadoUsuario;
 };
 
+// Inmueble (y zona opcional) al que pertenece un usuario
+export type Asignacion = { inmuebleId: string; zonaId: string | null };
+
 export const ROL_LABEL: Record<RolUsuario, string> = {
   Administrator: "Administrador",
   Operator: "Operador",

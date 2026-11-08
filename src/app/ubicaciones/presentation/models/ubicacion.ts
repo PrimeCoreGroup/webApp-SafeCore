@@ -8,6 +8,9 @@ export type Zona = {
   estado: EstadoUbicacion;
 };
 
+export type InmuebleInput = { nombre: string; direccion: string };
+export type ZonaInput = { nombre: string };
+
 export type Inmueble = {
   id: string;
   nombre: string;

@@ -50,7 +50,7 @@ const actividadTone = {
         />
       </div>
 
-      <div :class="['mt-6 grid gap-6', data.ubicaciones ? 'xl:grid-cols-[1.4fr_1fr]' : '']">
+      <div :class="['mt-6 grid gap-6', data.ubicaciones.length ? 'xl:grid-cols-[1.4fr_1fr]' : '']">
         <AppCard>
           <div class="mb-5 flex items-center justify-between">
             <div>
@@ -86,7 +86,7 @@ const actividadTone = {
           </div>
         </AppCard>
 
-        <AppCard v-if="data.ubicaciones">
+        <AppCard v-if="data.ubicaciones.length">
           <h2 class="text-lg font-bold text-ink">Estado por ubicación</h2>
           <p class="mt-1 text-sm text-muted">Resumen de edificios supervisados</p>
           <div class="mt-5 space-y-4">

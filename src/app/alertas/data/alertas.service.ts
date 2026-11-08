@@ -9,6 +9,7 @@ import type { Alerta, EstadoAlerta, SeveridadAlerta } from "../presentation/mode
 type RiskSituationApi = {
   id: string;
   deviceId: string | null;
+  componentId: string | null;
   origin: string;
   riskType: string;
   status: string;
@@ -16,7 +17,8 @@ type RiskSituationApi = {
   detectedAt: string;
 };
 
-type DeviceApi = { id: string; name: string };
+type DeviceApi = { id: string; name: string; zoneName: string | null; propertyName: string | null };
+type ComponentApi = { id: string; label: string };
 
 const EVENTO: Record<string, { titulo: string; descripcion: string }> = {
   Fire: {
@@ -53,25 +55,49 @@ const ESTADO: Record<string, EstadoAlerta> = {
 // Estado que se envía al resolver
 const STATUS_RESUELTA = "Resolved";
 
-function alertaDesdeApi(riesgo: RiskSituationApi, nodos: Map<string, string>): Alerta {
+type Contexto = { nodos: Map<string, { nombre: string; ubicacion: string }>; componentes: Map<string, string> };
+
+function alertaDesdeApi(riesgo: RiskSituationApi, contexto: Contexto): Alerta {
   const evento = EVENTO[riesgo.riskType];
   const origen = riesgo.origin === "Sensor" ? "Detectada automáticamente por un sensor." : "Registrada manualmente.";
+  const nodo = riesgo.deviceId ? contexto.nodos.get(riesgo.deviceId) : undefined;
   return {
     id: riesgo.id,
     evento: evento?.titulo ?? riesgo.riskType,
     severidad: SEVERIDAD[riesgo.severity] ?? "advertencia",
-    ubicacion: "Sin ubicación",
+    ubicacion: nodo?.ubicacion ?? "Sin ubicación",
     estado: ESTADO[riesgo.status] ?? "activa",
     fecha: formatFechaHora(riesgo.detectedAt),
-    dispositivo: riesgo.deviceId ? (nodos.get(riesgo.deviceId) ?? "Nodo") : "Sin nodo asociado",
+    dispositivo: riesgo.deviceId ? (nodo?.nombre ?? "Nodo") : "Sin nodo asociado",
     dispositivoId: riesgo.deviceId,
+    componente: riesgo.componentId ? (contexto.componentes.get(riesgo.componentId) ?? null) : null,
     descripcion: `${evento?.descripcion ?? "Situación de riesgo detectada."} ${origen}`,
   };
 }
 
-async function nombresDeNodos(): Promise<Map<string, string>> {
-  const nodos = await api.get<DeviceApi[]>("/api/devices?page=1&pageSize=250").catch(() => [] as DeviceApi[]);
-  return new Map(nodos.map((n) => [n.id, n.name]));
+async function cargarContexto(riesgos: RiskSituationApi[]): Promise<Contexto> {
+  const dispositivos = await api
+    .get<DeviceApi[]>("/api/devices?page=1&pageSize=250")
+    .catch(() => [] as DeviceApi[]);
+  const nodos = new Map(
+    dispositivos.map((d) => [
+      d.id,
+      {
+        nombre: d.name,
+        ubicacion: d.propertyName ? `${d.propertyName}${d.zoneName ? ` · ${d.zoneName}` : ""}` : "Sin ubicación",
+      },
+    ]),
+  );
+
+  // Solo se consultan los componentes de los nodos que tienen alertas con componente
+  const nodosConComponente = [...new Set(riesgos.filter((r) => r.componentId && r.deviceId).map((r) => r.deviceId!))];
+  const listas = await Promise.all(
+    nodosConComponente.map((id) =>
+      api.get<ComponentApi[]>(`/api/devices/${id}/components`).catch(() => [] as ComponentApi[]),
+    ),
+  );
+  const componentes = new Map(listas.flat().map((c) => [c.id, c.label]));
+  return { nodos, componentes };
 }
 
 let alertasMock: Alerta[] = structuredClone(mockAlertas);
@@ -79,14 +105,12 @@ let alertasMock: Alerta[] = structuredClone(mockAlertas);
 // GET /api/RiskSituations
 export async function getAlertas(): Promise<Alerta[]> {
   if (isMock("alertas")) return mockResponse(alertasMock, 0);
-  const [riesgos, nodos] = await Promise.all([
-    api.get<RiskSituationApi[]>("/api/RiskSituations?page=1&pageSize=250"),
-    nombresDeNodos(),
-  ]);
+  const riesgos = await api.get<RiskSituationApi[]>("/api/RiskSituations?page=1&pageSize=250");
+  const contexto = await cargarContexto(riesgos);
   return riesgos
     .slice()
     .sort((a, b) => new Date(b.detectedAt).getTime() - new Date(a.detectedAt).getTime())
-    .map((riesgo) => alertaDesdeApi(riesgo, nodos));
+    .map((riesgo) => alertaDesdeApi(riesgo, contexto));
 }
 
 // GET /api/RiskSituations/{id}
@@ -96,11 +120,8 @@ export async function getAlerta(id: string): Promise<Alerta> {
     if (!alerta) throw new Error("Alerta no encontrada");
     return mockResponse(alerta);
   }
-  const [riesgo, nodos] = await Promise.all([
-    api.get<RiskSituationApi>(`/api/RiskSituations/${id}`),
-    nombresDeNodos(),
-  ]);
-  return alertaDesdeApi(riesgo, nodos);
+  const riesgo = await api.get<RiskSituationApi>(`/api/RiskSituations/${id}`);
+  return alertaDesdeApi(riesgo, await cargarContexto([riesgo]));
 }
 
 // PUT /api/RiskSituations/{id} (reenvía los campos actuales; responde 204)

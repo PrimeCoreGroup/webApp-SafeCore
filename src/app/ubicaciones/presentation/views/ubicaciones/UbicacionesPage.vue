@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { RouterLink } from "vue-router";
-import { Building2, ChevronRight } from "@lucide/vue";
+import { RouterLink, useRouter } from "vue-router";
+import { Building2, ChevronRight, Plus } from "@lucide/vue";
+import AppButton from "@/app/shared/components/ui/AppButton.vue";
 import AppBadge from "@/app/shared/components/ui/AppBadge.vue";
 import AppCard from "@/app/shared/components/ui/AppCard.vue";
 import LoadingState from "@/app/shared/components/ui/LoadingState.vue";
@@ -9,11 +10,16 @@ import { useAsyncData } from "@/app/shared/composables/useAsyncData";
 import { getInmuebles } from "../../../data/ubicaciones.service";
 import { ESTADO_UBICACION_UI } from "../../config/ubicacion-ui";
 
+const router = useRouter();
 const { data: inmuebles, loading, error, reload } = useAsyncData(getInmuebles);
 </script>
 
 <template>
-  <PageTitle title="Ubicaciones" description="Edificios y espacios supervisados por SafeCore." />
+  <PageTitle title="Ubicaciones" description="Edificios y espacios supervisados por SafeCore.">
+    <template #action>
+      <AppButton :icon="Plus" @click="router.push({ name: 'inmueble-nuevo' })">Agregar inmueble</AppButton>
+    </template>
+  </PageTitle>
 
   <LoadingState :loading="loading" :error="error" @retry="reload">
     <AppCard flush>

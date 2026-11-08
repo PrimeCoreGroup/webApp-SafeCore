@@ -45,6 +45,7 @@ function filas(a: Alerta): [string, string][] {
     ["Ubicación", a.ubicacion],
     ["Fecha / hora", a.fecha],
     ["Nodo", a.dispositivo],
+    ...(a.componente ? ([["Componente", a.componente]] as [string, string][]) : []),
     ["Estado", ESTADO_ALERTA_LABEL[a.estado]],
   ];
 }

@@ -14,7 +14,7 @@ import { useAsyncData } from "@/app/shared/composables/useAsyncData";
 import { useToast } from "@/app/shared/composables/useToast";
 import { deleteNodo, getNodos } from "../../../data/nodos.service";
 import { NODO_ESTADO_UI } from "../../config/nodo-ui";
-import type { Nodo, NodoFiltros } from "../../models/nodo";
+import { componentesConFalla, type Nodo, type NodoFiltros } from "../../models/nodo";
 
 const router = useRouter();
 const toast = useToast();
@@ -35,7 +35,10 @@ const filtrados = computed(() => {
 const total = computed(() => nodos.value?.length ?? 0);
 const enLinea = computed(() => (nodos.value ?? []).filter((n) => n.estado === "online").length);
 const requierenAtencion = computed(
-  () => (nodos.value ?? []).filter((n) => n.estado === "offline" || n.estado === "degraded").length,
+  () =>
+    (nodos.value ?? []).filter(
+      (n) => n.estado === "offline" || n.estado === "degraded" || componentesConFalla(n) > 0,
+    ).length,
 );
 const porcentajeEnLinea = computed(() =>
   total.value ? `${((enLinea.value / total.value) * 100).toFixed(1).replace(".", ",")}% en línea` : "—",
@@ -76,7 +79,7 @@ async function confirmarEliminacion() {
     <StatCard
       label="Requieren atención"
       :value="requierenAtencion"
-      detail="Sin conexión o degradados"
+      detail="Sin conexión, degradados o con fallas"
       :icon="TriangleAlert"
       tone="red"
     />
@@ -124,6 +127,10 @@ async function confirmarEliminacion() {
                 <span class="block text-xs text-muted">
                   {{ nodo.sensores.length }} sensor{{ nodo.sensores.length === 1 ? "" : "es" }} ·
                   {{ nodo.actuadores.length }} actuador{{ nodo.actuadores.length === 1 ? "" : "es" }}
+                </span>
+                <span v-if="componentesConFalla(nodo)" class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-danger">
+                  <TriangleAlert class="size-3.5" aria-hidden="true" />
+                  {{ componentesConFalla(nodo) }} con falla
                 </span>
               </td>
               <td class="px-5 py-4 text-sm text-muted">

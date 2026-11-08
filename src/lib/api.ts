@@ -6,7 +6,13 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 const TOKEN_KEY = "safecore_token";
 const USER_KEY = "safecore_user";
 
-export type StoredUser = { id: string; name: string; email: string; roles: string[] };
+export type StoredUser = {
+  id: string;
+  name: string;
+  email: string;
+  roles: string[];
+  mustChangePassword: boolean;
+};
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -29,7 +35,7 @@ export function getUser(): StoredUser | null {
   if (!raw) return null;
   try {
     const user = JSON.parse(raw);
-    return Array.isArray(user?.roles) ? user : null;
+    return Array.isArray(user?.roles) ? { ...user, mustChangePassword: !!user.mustChangePassword } : null;
   } catch {
     return null;
   }
@@ -73,6 +79,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (!response.ok) {
     const body = await response.json().catch(() => null);
+    // Tras un restablecimiento el backend solo permite cambiar la contraseña
+    if (response.status === 403 && body?.changePasswordEndpoint) {
+      const user = getUser();
+      if (user) setUser({ ...user, mustChangePassword: true });
+      window.location.href = "/cambiar-contrasena";
+    }
     throw new Error(mensajeDeError(response.status, body, esLogin));
   }
 

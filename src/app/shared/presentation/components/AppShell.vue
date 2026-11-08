@@ -113,7 +113,7 @@ onMounted(async () => {
 
     <main class="lg:ml-64">
       <div class="mx-auto max-w-7xl p-5 sm:p-8">
-        <RouterView />
+        <RouterView :key="route.fullPath" />
       </div>
     </main>
   </div>
