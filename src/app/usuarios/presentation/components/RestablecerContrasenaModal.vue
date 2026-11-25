@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import AppButton from "@/app/shared/components/ui/AppButton.vue";
 import FormField from "@/app/shared/components/ui/FormField.vue";
-import { inputClass } from "@/app/shared/components/ui/form-classes";
+import PasswordInput from "@/app/shared/components/ui/PasswordInput.vue";
 
 defineProps<{ guardando: boolean; error: string | null }>();
 const emit = defineEmits<{ guardar: [string]; cancelar: [] }>();
@@ -41,7 +41,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onKeydown));
 
       <div class="mt-5">
         <FormField label="Nueva contraseña" :error="errorClave">
-          <input v-model="clave" type="password" autocomplete="new-password" :class="inputClass" />
+          <PasswordInput v-model="clave" autocomplete="new-password" />
         </FormField>
       </div>
 

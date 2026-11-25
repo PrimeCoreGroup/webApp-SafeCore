@@ -9,6 +9,7 @@ import ConfirmModal from "@/app/shared/components/ui/ConfirmModal.vue";
 import FormField from "@/app/shared/components/ui/FormField.vue";
 import LoadingState from "@/app/shared/components/ui/LoadingState.vue";
 import PageTitle from "@/app/shared/components/ui/PageTitle.vue";
+import PasswordInput from "@/app/shared/components/ui/PasswordInput.vue";
 import { inputClass } from "@/app/shared/components/ui/form-classes";
 import { useToast } from "@/app/shared/composables/useToast";
 import {
@@ -203,7 +204,7 @@ async function restablecer(nueva: string) {
             hint="Mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo."
             class="sm:col-span-2"
           >
-            <input v-model="form.password" type="password" autocomplete="new-password" :class="inputClass" />
+            <PasswordInput v-model="form.password" autocomplete="new-password" />
           </FormField>
           <FormField label="Rol" :hint="descripcionRol">
             <select v-model="form.rol" :disabled="editando || !!creadoId" :class="inputClass">

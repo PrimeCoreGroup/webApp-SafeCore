@@ -7,6 +7,7 @@ import { useAuth } from "@/app/shared/composables/useAuth";
 import { inputClass } from "@/app/shared/components/ui/form-classes";
 import ConfirmModal from "@/app/shared/components/ui/ConfirmModal.vue";
 import FormField from "@/app/shared/components/ui/FormField.vue";
+import PasswordInput from "@/app/shared/components/ui/PasswordInput.vue";
 import { loginRequest } from "../../../data/auth.service";
 
 const router = useRouter();
@@ -96,13 +97,7 @@ async function onSubmit() {
             />
           </FormField>
           <FormField label="Contraseña">
-            <input
-              v-model="password"
-              type="password"
-              autocomplete="current-password"
-              placeholder="••••••••"
-              :class="[inputClass, 'h-12']"
-            />
+            <PasswordInput v-model="password" autocomplete="current-password" placeholder="••••••••" grande />
           </FormField>
           <div class="text-right">
             <button

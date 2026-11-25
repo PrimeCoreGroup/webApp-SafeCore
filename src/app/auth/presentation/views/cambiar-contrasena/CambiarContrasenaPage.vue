@@ -4,7 +4,7 @@ import { KeyRound } from "@lucide/vue";
 import { clearToken, clearUser } from "@/lib/api";
 import AppButton from "@/app/shared/components/ui/AppButton.vue";
 import FormField from "@/app/shared/components/ui/FormField.vue";
-import { inputClass } from "@/app/shared/components/ui/form-classes";
+import PasswordInput from "@/app/shared/components/ui/PasswordInput.vue";
 import { changePasswordRequest } from "../../../data/auth.service";
 
 const form = reactive({ actual: "", nueva: "", confirmacion: "" });
@@ -60,17 +60,17 @@ function cerrarSesion() {
 
       <form class="mt-8 space-y-5" novalidate @submit.prevent="guardar">
         <FormField label="Contraseña actual" :error="errores.actual">
-          <input v-model="form.actual" type="password" autocomplete="current-password" :class="inputClass" />
+          <PasswordInput v-model="form.actual" autocomplete="current-password" />
         </FormField>
         <FormField
           label="Nueva contraseña"
           :error="errores.nueva"
           hint="Mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo."
         >
-          <input v-model="form.nueva" type="password" autocomplete="new-password" :class="inputClass" />
+          <PasswordInput v-model="form.nueva" autocomplete="new-password" />
         </FormField>
         <FormField label="Confirmar nueva contraseña" :error="errores.confirmacion">
-          <input v-model="form.confirmacion" type="password" autocomplete="new-password" :class="inputClass" />
+          <PasswordInput v-model="form.confirmacion" autocomplete="new-password" />
         </FormField>
 
         <p v-if="errorGuardado" class="text-sm font-medium text-danger" role="alert">{{ errorGuardado }}</p>
